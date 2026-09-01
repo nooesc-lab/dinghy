@@ -183,8 +183,8 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 
 	const hasServers = servers && servers.length > 0;
 	// Show dropdown logic based on cloud environment
-	// Cloud: show only if there are remote servers (no Dokploy option)
-	// Self-hosted: show only if there are remote servers (Dokploy is default, hide if no remote servers)
+	// Cloud: show only if there are remote servers (no Dinghy option)
+	// Self-hosted: show only if there are remote servers (Dinghy is default, hide if no remote servers)
 	const shouldShowServerDropdown = hasServers;
 
 	const handleToggleBookmark = async (
@@ -558,7 +558,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																	<SelectTrigger>
 																		<SelectValue
 																			placeholder={
-																				!isCloud ? "Dokploy" : "Select a Server"
+																				!isCloud ? "Dinghy" : "Select a Server"
 																			}
 																		/>
 																	</SelectTrigger>
@@ -567,7 +567,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																			{!isCloud && (
 																				<SelectItem value="dokploy">
 																					<span className="flex items-center gap-2 justify-between w-full">
-																						<span>Dokploy</span>
+																						<span>Dinghy</span>
 																						<span className="text-muted-foreground text-xs self-center">
 																							Default
 																						</span>

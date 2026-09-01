@@ -41,7 +41,7 @@ const MyApp = ({
 				`}
 			</style>
 			<Head>
-				<title>Dokploy</title>
+				<title>Dinghy</title>
 			</Head>
 			<TooltipProvider>
 				<ThemeProvider

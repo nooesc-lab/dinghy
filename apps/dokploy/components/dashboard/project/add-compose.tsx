@@ -83,8 +83,8 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 
 	const hasServers = servers && servers.length > 0;
 	// Show dropdown logic based on cloud environment
-	// Cloud: show only if there are remote servers (no Dokploy option)
-	// Self-hosted: show only if there are remote servers (Dokploy is default, hide if no remote servers)
+	// Cloud: show only if there are remote servers (no Dinghy option)
+	// Self-hosted: show only if there are remote servers (Dinghy is default, hide if no remote servers)
 	const shouldShowServerDropdown = hasServers;
 
 	const form = useForm<AddCompose>({
@@ -212,7 +212,7 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 											<SelectTrigger>
 												<SelectValue
 													placeholder={
-														showLocalOption ? "Dokploy" : "Select a Server"
+														showLocalOption ? "Dinghy" : "Select a Server"
 													}
 												/>
 											</SelectTrigger>
@@ -221,7 +221,7 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 													{showLocalOption && (
 														<SelectItem value="dokploy">
 															<span className="flex items-center gap-2 justify-between w-full">
-																<span>Dokploy</span>
+																<span>Dinghy</span>
 																<span className="text-muted-foreground text-xs self-center">
 																	Default
 																</span>

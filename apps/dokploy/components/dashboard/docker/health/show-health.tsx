@@ -84,7 +84,7 @@ export const ShowHealth = ({ serverId }: Props) => {
 	const buildHealthReport = () => {
 		if (!health) return "";
 		const lines: string[] = [];
-		lines.push("# Dokploy server health report");
+		lines.push("# Dinghy server health report");
 		lines.push(`Generated: ${new Date(health.checkedAt).toLocaleString()}`);
 		lines.push(
 			`Window: ${SINCE_HOURS_OPTIONS.find((o) => o.value === sinceHours)?.label ?? `${sinceHours}h`}`,

@@ -10,7 +10,6 @@ import {
 	Boxes,
 	ChevronRight,
 	ChevronsUpDown,
-	CircleHelp,
 	ClipboardList,
 	Clock,
 	CreditCard,
@@ -43,7 +42,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -449,11 +447,6 @@ const MENU: Menu = {
 			url: "https://docs.dokploy.com/docs/core",
 			icon: BookIcon,
 		},
-		{
-			name: "Support",
-			url: "https://discord.gg/2tBnJ3jDJc",
-			icon: CircleHelp,
-		},
 	],
 } as const;
 
@@ -584,8 +577,6 @@ function SidebarLogo() {
 	const { isMobile } = useSidebar();
 	const isCollapsed = state === "collapsed" && !isMobile;
 	const { data: activeOrganization } = api.organization.active.useQuery();
-	const { data: haveValidLicense } =
-		api.licenseKey.haveValidLicenseKey.useQuery();
 
 	const { data: invitations, refetch: refetchInvitations } =
 		api.user.getInvitations.useQuery();
@@ -660,9 +651,6 @@ function SidebarLogo() {
 												<p className="text-sm font-medium leading-none">
 													{activeOrganization?.name ?? "Select Organization"}
 												</p>
-												{haveValidLicense && (
-													<Badge variant="blue">Enterprise</Badge>
-												)}
 											</div>
 										</div>
 									</div>

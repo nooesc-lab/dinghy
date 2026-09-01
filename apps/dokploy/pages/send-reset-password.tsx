@@ -92,7 +92,7 @@ export default function Home() {
 						}
 					/>
 					<span className="font-medium text-sm">
-						{whitelabeling?.appName || "Dokploy"}
+						{whitelabeling?.appName || "Dinghy"}
 					</span>
 				</Link>
 				<CardTitle className="text-2xl font-bold">Reset Password</CardTitle>

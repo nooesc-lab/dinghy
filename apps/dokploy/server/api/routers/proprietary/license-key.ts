@@ -1,6 +1,6 @@
 import { db } from "@dokploy/server/db";
 import { user } from "@dokploy/server/db/schema";
-import { hasValidLicense, validateLicenseKey } from "@dokploy/server/index";
+import { validateLicenseKey } from "@dokploy/server/index";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -192,8 +192,9 @@ export const licenseKeyRouter = createTRPCRouter({
 			licenseKey: currentUser.licenseKey ?? "",
 		};
 	}),
-	haveValidLicenseKey: protectedProcedure.query(async ({ ctx }) => {
-		return await hasValidLicense(ctx.session.activeOrganizationId);
+	haveValidLicenseKey: protectedProcedure.query(async () => {
+		// Enterprise is always unlocked in this fork; no license checks run.
+		return true;
 	}),
 	updateEnterpriseSettings: adminProcedure
 		.input(

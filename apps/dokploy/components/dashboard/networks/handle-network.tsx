@@ -123,7 +123,7 @@ const toggleOptions = [
 ] as const;
 
 interface HandleNetworkProps {
-	/** Target server; undefined creates on the local Dokploy server */
+	/** Target server; undefined creates on the local Dinghy server */
 	serverId?: string;
 	children?: React.ReactNode;
 }

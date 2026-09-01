@@ -86,40 +86,6 @@ export async function submitToHubSpot(
 	contactData: SignUpFormData,
 	hutk?: string | null,
 ): Promise<boolean> {
-	try {
-		const portalId = process.env.HUBSPOT_PORTAL_ID;
-		const formGuid = process.env.HUBSPOT_FORM_GUID;
-
-		if (!portalId || !formGuid) {
-			console.error(
-				"HubSpot configuration missing: HUBSPOT_PORTAL_ID or HUBSPOT_FORM_GUID not set",
-			);
-			return false;
-		}
-
-		const formData = formatContactDataForHubSpot(contactData, hutk);
-		const response = await fetch(
-			`https://api.hsforms.com/submissions/v3/integration/submit/${portalId}/${formGuid}`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(formData),
-			},
-		);
-
-		if (!response.ok) {
-			const errorText = await response.text();
-			console.error("HubSpot API error:", response.status, errorText);
-			return false;
-		}
-
-		const result = await response.json();
-		console.log("HubSpot submission successful:", result);
-		return true;
-	} catch (error) {
-		console.error("Error submitting to HubSpot:", error);
-		return false;
-	}
+	// HubSpot tracking is disabled in this fork: no data is sent to HubSpot.
+	return true;
 }

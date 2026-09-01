@@ -82,7 +82,7 @@ const SLIDES: ShowcaseItem[][] = [
 			icon: Database,
 			title: "Managed databases",
 			description:
-				"Manage and back up MySQL, PostgreSQL, MongoDB, MariaDB, and Redis directly from Dokploy.",
+				"Manage and back up MySQL, PostgreSQL, MongoDB, MariaDB, and Redis directly from Dinghy.",
 		},
 		{
 			icon: Terminal,
@@ -99,7 +99,7 @@ const SLIDES: ShowcaseItem[][] = [
 			icon: Unlock,
 			title: "No lock-in",
 			description:
-				"Modify, scale, and customize Dokploy however your project needs.",
+				"Modify, scale, and customize Dinghy however your project needs.",
 		},
 	],
 ];

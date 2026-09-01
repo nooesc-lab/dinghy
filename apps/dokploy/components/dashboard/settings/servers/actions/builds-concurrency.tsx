@@ -9,7 +9,7 @@ const MAX_CONCURRENCY = 100;
 interface Props {
 	/**
 	 * When provided, configures concurrency for that remote server. When
-	 * omitted, configures the local Dokploy web server.
+	 * omitted, configures the local Dinghy web server.
 	 */
 	serverId?: string;
 	/** Optional title override (e.g. the server name in a list). */
@@ -79,7 +79,7 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 				<div className="space-y-0.5">
 					<div className="flex items-center gap-2">
 						<p className="text-sm font-medium">
-							{label ?? serverQuery.data?.name ?? "Dokploy Server"}
+							{label ?? serverQuery.data?.name ?? "Dinghy Server"}
 						</p>
 						<span className="text-xs text-muted-foreground rounded border px-1.5 py-0.5">
 							{serverId

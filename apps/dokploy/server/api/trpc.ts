@@ -9,7 +9,6 @@
 
 // import { getServerAuthSession } from "@/server/auth";
 import { db } from "@dokploy/server/db";
-import { hasValidLicense } from "@dokploy/server/index";
 import type { statements } from "@dokploy/server/lib/access-control";
 import { validateRequest } from "@dokploy/server/lib/auth";
 import { checkPermission } from "@dokploy/server/services/permission";
@@ -209,9 +208,9 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
 });
 
 /**
- * Requires admin/owner role AND enterprise enabled with a license key in DB.
- * Does NOT call the license server on every request; full validation (haveValidLicenseKey)
- * is used in the UI gate and when activating/validating keys.
+ * Enterprise-gated procedures. License validation is disabled in this fork:
+ * the middleware passes through after the standard auth check so all
+ * enterprise routes are unlocked.
  */
 export const enterpriseProcedure = t.procedure.use(async ({ ctx, next }) => {
 	if (
@@ -220,17 +219,6 @@ export const enterpriseProcedure = t.procedure.use(async ({ ctx, next }) => {
 		(ctx.user.role !== "owner" && ctx.user.role !== "admin")
 	) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
-	}
-
-	const hasValidLicenseResult = await hasValidLicense(
-		ctx.session.activeOrganizationId,
-	);
-
-	if (!hasValidLicenseResult) {
-		throw new TRPCError({
-			code: "FORBIDDEN",
-			message: "Valid enterprise license required",
-		});
 	}
 
 	return next({

@@ -83,7 +83,7 @@ export const HandleDnsRecord = ({
 
 	const panelIp = panelPublicIp || panelStoredIp;
 	const ipSuggestions = [
-		...(panelIp ? [{ ip: panelIp, label: "This Dokploy server" }] : []),
+		...(panelIp ? [{ ip: panelIp, label: "This Dinghy server" }] : []),
 		...(servers ?? []).map((server) => ({
 			ip: server.ipAddress,
 			label: server.name,

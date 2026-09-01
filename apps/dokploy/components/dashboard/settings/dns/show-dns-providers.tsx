@@ -36,7 +36,7 @@ export const ShowDnsProviders = () => {
 							DNS Providers
 						</CardTitle>
 						<CardDescription>
-							Connect a DNS provider so Dokploy can create the A/CNAME record
+							Connect a DNS provider so Dinghy can create the A/CNAME record
 							for a domain instead of you setting it up by hand.
 						</CardDescription>
 					</CardHeader>

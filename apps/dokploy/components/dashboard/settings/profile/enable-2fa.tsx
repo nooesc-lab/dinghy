@@ -66,7 +66,7 @@ export const USERNAME_PLACEHOLDER = "%username%";
 export const DATE_PLACEHOLDER = "%date%";
 export const BACKUP_CODES_PLACEHOLDER = "%backupCodes%";
 
-export const backupCodeTemplate = `Dokploy - BACKUP VERIFICATION CODES
+export const backupCodeTemplate = `Dinghy - BACKUP VERIFICATION CODES
 
 Points to note
 --------------

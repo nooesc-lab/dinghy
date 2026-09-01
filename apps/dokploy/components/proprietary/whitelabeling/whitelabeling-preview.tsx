@@ -17,7 +17,7 @@ interface WhitelabelingPreviewProps {
 }
 
 export function WhitelabelingPreview({ config }: WhitelabelingPreviewProps) {
-	const appName = config.appName || "Dokploy";
+	const appName = config.appName || "Dinghy";
 
 	return (
 		<Card className="bg-transparent">

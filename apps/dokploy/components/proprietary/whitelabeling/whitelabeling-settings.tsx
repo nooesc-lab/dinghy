@@ -54,7 +54,7 @@ const formSchema = z.object({
 type FormSchema = z.infer<typeof formSchema>;
 
 const DEFAULT_CSS_TEMPLATE = `/* ============================================
-   Dokploy Default Theme - CSS Variables
+   Dinghy Default Theme - CSS Variables
    Modify these values to customize your instance.
 
    Theme colors use the oklch() color format
@@ -296,10 +296,10 @@ export function WhitelabelingSettings() {
 									<FormItem>
 										<FormLabel>Application Name</FormLabel>
 										<FormControl>
-											<Input placeholder="Dokploy" {...field} />
+											<Input placeholder="Dinghy" {...field} />
 										</FormControl>
 										<FormDescription>
-											Replaces "Dokploy" across the entire interface.
+											Replaces "Dinghy" across the entire interface.
 										</FormDescription>
 										<FormMessage />
 									</FormItem>
@@ -314,13 +314,13 @@ export function WhitelabelingSettings() {
 										<FormLabel>Application Description</FormLabel>
 										<FormControl>
 											<Input
-												placeholder="The Open Source alternative to Netlify, Vercel, Heroku."
+												placeholder="Little boat. Big ships."
 												{...field}
 											/>
 										</FormControl>
 										<FormDescription>
 											Tagline shown on the login/onboarding pages. Defaults to
-											the standard Dokploy description if empty.
+											the standard Dinghy description if empty.
 										</FormDescription>
 										<FormMessage />
 									</FormItem>
@@ -457,10 +457,10 @@ export function WhitelabelingSettings() {
 									<FormItem>
 										<FormLabel>Page Title</FormLabel>
 										<FormControl>
-											<Input placeholder="Dokploy" {...field} />
+											<Input placeholder="Dinghy" {...field} />
 										</FormControl>
 										<FormDescription>
-											Browser tab title. Defaults to "Dokploy" if empty.
+											Browser tab title. Defaults to "Dinghy" if empty.
 										</FormDescription>
 										<FormMessage />
 									</FormItem>

@@ -57,7 +57,7 @@ import { api } from "@/utils/api";
 type NetworkRow = inferRouterOutputs<AppRouter>["network"]["all"][number];
 
 interface Props {
-	/** Selected server; undefined shows the local Dokploy server */
+	/** Selected server; undefined shows the local Dinghy server */
 	serverId?: string;
 }
 
@@ -294,7 +294,7 @@ export const ShowNetworks = ({ serverId }: Props) => {
 						/>
 						<DialogAction
 							title="Delete network"
-							description={`The network "${row.original.name}" will be removed from Docker and Dokploy. This action cannot be undone.`}
+							description={`The network "${row.original.name}" will be removed from Docker and Dinghy. This action cannot be undone.`}
 							onClick={async () => {
 								try {
 									await removeNetwork({

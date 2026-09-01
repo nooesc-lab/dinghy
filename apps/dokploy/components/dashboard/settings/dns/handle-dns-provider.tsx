@@ -273,7 +273,7 @@ export const HandleDnsProvider = ({ dnsProviderId }: Props) => {
 										</FormControl>
 										<FormDescription>
 											Create a token scoped to Zone → DNS → Edit for the zones
-											you want Dokploy to manage. Avoid the Global API Key.
+											you want Dinghy to manage. Avoid the Global API Key.
 										</FormDescription>
 										<FormMessage />
 									</FormItem>
