@@ -30,6 +30,7 @@ import {
 	Palette,
 	Server,
 	ShieldCheck,
+	SlidersHorizontal,
 	Smartphone,
 	Star,
 	Tags,
@@ -160,6 +161,9 @@ type Menu = {
 // Consists of unfiltered home, settings, and help items
 // The items are filtered based on the user's role and permissions
 // The `isEnabled` function is called to determine if the item should be displayed
+// dinghy: nav trimmed to a Railway-like set. Nothing is deleted: routes still
+// resolve via deep links; entries are hidden (`isEnabled: () => false`) or
+// nested under "Server" / "Advanced" groups.
 const MENU: Menu = {
 	home: [
 		{
@@ -179,8 +183,8 @@ const MENU: Menu = {
 			title: "Overview",
 			url: "/dashboard/overview",
 			icon: LayoutGrid,
-			// Only enabled for users with access to services
-			isEnabled: ({ permissions }) => !!permissions?.service.read,
+			// dinghy: hidden from nav (reachable via deep link)
+			isEnabled: () => false,
 		},
 		{
 			isSingle: true,
@@ -192,36 +196,47 @@ const MENU: Menu = {
 				!isCloud && !!permissions?.monitoring.read,
 		},
 		{
-			isSingle: true,
-			title: "Schedules",
-			url: "/dashboard/schedules",
-			icon: Clock,
-			isEnabled: ({ permissions }) => !!permissions?.organization.update,
-		},
-		{
-			isSingle: true,
-			title: "Traefik File System",
-			url: "/dashboard/traefik",
-			icon: GalleryVerticalEnd,
-			// Only enabled for users with access to Traefik files
-			isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
-		},
-		{
-			isSingle: true,
-			title: "Docker",
-			url: "/dashboard/docker",
-			icon: BlocksIcon,
-			// Only enabled for users with access to Docker
-			isEnabled: ({ permissions }) => !!permissions?.docker.read,
-		},
-		{
-			isSingle: true,
-			title: "Requests",
-			url: "/dashboard/requests",
-			icon: Forward,
-			// Only enabled for users with access to Docker in non-cloud environments
-			isEnabled: ({ permissions, isCloud }) =>
-				!!(permissions?.docker.read && !isCloud),
+			isSingle: false,
+			title: "Server",
+			icon: Server,
+			items: [
+				{
+					title: "Web Server",
+					url: "/dashboard/settings/server",
+					icon: Activity,
+					// Only enabled for admins in non-cloud environments
+					isEnabled: ({ permissions, isCloud }) =>
+						!!(permissions?.organization.update && !isCloud),
+				},
+				{
+					title: "Docker",
+					url: "/dashboard/docker",
+					icon: BlocksIcon,
+					// Only enabled for users with access to Docker
+					isEnabled: ({ permissions }) => !!permissions?.docker.read,
+				},
+				{
+					title: "Traefik File System",
+					url: "/dashboard/traefik",
+					icon: GalleryVerticalEnd,
+					// Only enabled for users with access to Traefik files
+					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
+				},
+				{
+					title: "Requests",
+					url: "/dashboard/requests",
+					icon: Forward,
+					// Only enabled for users with access to Docker in non-cloud environments
+					isEnabled: ({ permissions, isCloud }) =>
+						!!(permissions?.docker.read && !isCloud),
+				},
+				{
+					title: "Schedules",
+					url: "/dashboard/schedules",
+					icon: Clock,
+					isEnabled: ({ permissions }) => !!permissions?.organization.update,
+				},
+			],
 		},
 
 		// Legacy unused menu, adjusted to the new structure
@@ -284,24 +299,9 @@ const MENU: Menu = {
 	settings: [
 		{
 			isSingle: true,
-			title: "Web Server",
-			url: "/dashboard/settings/server",
-			icon: Activity,
-			// Only enabled for admins in non-cloud environments
-			isEnabled: ({ permissions, isCloud }) =>
-				!!(permissions?.organization.update && !isCloud),
-		},
-		{
-			isSingle: true,
 			title: "Profile",
 			url: "/dashboard/settings/profile",
 			icon: User,
-		},
-		{
-			isSingle: true,
-			title: "Sessions",
-			icon: Smartphone,
-			url: "/dashboard/settings/sessions",
 		},
 		{
 			isSingle: true,
@@ -309,14 +309,6 @@ const MENU: Menu = {
 			url: "/dashboard/settings/servers",
 			icon: Server,
 			isEnabled: ({ permissions }) => !!permissions?.server.read,
-		},
-		{
-			isSingle: true,
-			title: "Deployments",
-			url: "/dashboard/settings/deployments",
-			icon: Boxes,
-			isEnabled: ({ permissions, isCloud }) =>
-				!!(permissions?.server.read && !isCloud),
 		},
 		{
 			isSingle: true,
@@ -328,10 +320,11 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Audit Logs",
-			icon: ClipboardList,
-			url: "/dashboard/settings/audit-logs",
-			isEnabled: ({ permissions }) => !!permissions?.auditLog.read,
+			title: "Git",
+			url: "/dashboard/settings/git-providers",
+			icon: GitBranch,
+			// Only enabled for users with access to Git providers
+			isEnabled: ({ permissions }) => !!permissions?.gitProviders.read,
 		},
 		{
 			isSingle: true,
@@ -342,102 +335,108 @@ const MENU: Menu = {
 			isEnabled: ({ permissions }) => !!permissions?.sshKeys.read,
 		},
 		{
-			title: "AI",
-			icon: BotIcon,
-			url: "/dashboard/settings/ai",
-			isSingle: true,
-			isEnabled: ({ permissions }) => !!permissions?.organization.update,
-		},
-		{
-			isSingle: true,
-			title: "Tags",
-			url: "/dashboard/settings/tags",
-			icon: Tags,
-			isEnabled: ({ permissions }) => !!permissions?.tag.read,
-		},
-		{
-			isSingle: true,
-			title: "Git",
-			url: "/dashboard/settings/git-providers",
-			icon: GitBranch,
-			// Only enabled for users with access to Git providers
-			isEnabled: ({ permissions }) => !!permissions?.gitProviders.read,
-		},
-		{
-			isSingle: true,
-			title: "Registry",
-			url: "/dashboard/settings/registry",
-			icon: Package,
-			isEnabled: ({ permissions }) => !!permissions?.registry.read,
-		},
-		{
-			isSingle: true,
-			title: "Secrets",
-			url: "/dashboard/settings/secrets",
-			icon: Vault,
-			isEnabled: ({ permissions }) => !!permissions?.vaultProvider.create,
-		},
-		{
-			isSingle: true,
-			title: "DNS Providers",
-			url: "/dashboard/settings/dns",
-			icon: Globe,
-			isEnabled: ({ permissions }) => !!permissions?.dnsProvider.read,
-		},
-		{
-			isSingle: true,
-			title: "S3 Destinations",
-			url: "/dashboard/settings/destinations",
-			icon: HardDrive,
-			isEnabled: ({ permissions }) => !!permissions?.destination.read,
-		},
-
-		{
-			isSingle: true,
-			title: "Certificates",
-			url: "/dashboard/settings/certificates",
-			icon: ShieldCheck,
-			isEnabled: ({ permissions }) => !!permissions?.certificate.read,
-		},
-		{
-			isSingle: true,
-			title: "Notifications",
-			url: "/dashboard/settings/notifications",
-			icon: Bell,
-			// Only enabled for users with access to notifications
-			isEnabled: ({ permissions }) => !!permissions?.notification.read,
-		},
-		{
-			isSingle: true,
-			title: "Billing",
-			url: "/dashboard/settings/billing",
-			icon: CreditCard,
-			// Only enabled for owners in cloud environments
-			isEnabled: ({ auth, isCloud }) => !!(auth?.role === "owner" && isCloud),
-		},
-		{
-			isSingle: true,
-			title: "License",
-			url: "/dashboard/settings/license",
-			icon: Key,
-			// Only enabled for owners
-			isEnabled: ({ auth }) => !!(auth?.role === "owner"),
-		},
-		{
-			isSingle: true,
-			title: "SSO",
-			url: "/dashboard/settings/sso",
-			icon: LogIn,
-			// Enabled for admins in both cloud and self-hosted (enterprise)
-			isEnabled: ({ permissions }) => !!permissions?.organization.update,
-		},
-		{
-			isSingle: true,
-			title: "Whitelabeling",
-			url: "/dashboard/settings/whitelabeling",
-			icon: Palette,
-			// Only enabled for owners in non-cloud environments (enterprise)
-			isEnabled: ({ auth, isCloud }) => !!(auth?.role === "owner" && !isCloud),
+			isSingle: false,
+			title: "Advanced",
+			icon: SlidersHorizontal,
+			items: [
+				{
+					title: "Sessions",
+					icon: Smartphone,
+					url: "/dashboard/settings/sessions",
+				},
+				{
+					title: "Deployments",
+					url: "/dashboard/settings/deployments",
+					icon: Boxes,
+					isEnabled: ({ permissions, isCloud }) =>
+						!!(permissions?.server.read && !isCloud),
+				},
+				{
+					title: "Audit Logs",
+					icon: ClipboardList,
+					url: "/dashboard/settings/audit-logs",
+					isEnabled: ({ permissions }) => !!permissions?.auditLog.read,
+				},
+				{
+					title: "AI",
+					icon: BotIcon,
+					url: "/dashboard/settings/ai",
+					isEnabled: ({ permissions }) => !!permissions?.organization.update,
+				},
+				{
+					title: "Tags",
+					url: "/dashboard/settings/tags",
+					icon: Tags,
+					isEnabled: ({ permissions }) => !!permissions?.tag.read,
+				},
+				{
+					title: "Registry",
+					url: "/dashboard/settings/registry",
+					icon: Package,
+					isEnabled: ({ permissions }) => !!permissions?.registry.read,
+				},
+				{
+					title: "Secrets",
+					url: "/dashboard/settings/secrets",
+					icon: Vault,
+					isEnabled: ({ permissions }) => !!permissions?.vaultProvider.create,
+				},
+				{
+					title: "DNS Providers",
+					url: "/dashboard/settings/dns",
+					icon: Globe,
+					isEnabled: ({ permissions }) => !!permissions?.dnsProvider.read,
+				},
+				{
+					title: "S3 Destinations",
+					url: "/dashboard/settings/destinations",
+					icon: HardDrive,
+					isEnabled: ({ permissions }) => !!permissions?.destination.read,
+				},
+				{
+					title: "Certificates",
+					url: "/dashboard/settings/certificates",
+					icon: ShieldCheck,
+					isEnabled: ({ permissions }) => !!permissions?.certificate.read,
+				},
+				{
+					title: "Notifications",
+					url: "/dashboard/settings/notifications",
+					icon: Bell,
+					// Only enabled for users with access to notifications
+					isEnabled: ({ permissions }) => !!permissions?.notification.read,
+				},
+				{
+					title: "Billing",
+					url: "/dashboard/settings/billing",
+					icon: CreditCard,
+					// Only enabled for owners in cloud environments
+					isEnabled: ({ auth, isCloud }) =>
+						!!(auth?.role === "owner" && isCloud),
+				},
+				{
+					title: "License",
+					url: "/dashboard/settings/license",
+					icon: Key,
+					// Only enabled for owners
+					isEnabled: ({ auth }) => !!(auth?.role === "owner"),
+				},
+				{
+					title: "SSO",
+					url: "/dashboard/settings/sso",
+					icon: LogIn,
+					// Enabled for admins in both cloud and self-hosted (enterprise)
+					isEnabled: ({ permissions }) => !!permissions?.organization.update,
+				},
+				{
+					title: "Whitelabeling",
+					url: "/dashboard/settings/whitelabeling",
+					icon: Palette,
+					// Only enabled for owners in non-cloud environments (enterprise)
+					isEnabled: ({ auth, isCloud }) =>
+						!!(auth?.role === "owner" && !isCloud),
+				},
+			],
 		},
 	],
 

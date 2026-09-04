@@ -531,3 +531,234 @@ body[data-scroll-locked] [data-slot="sidebar-inset"] {
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
 }
+
+/* ===== dinghy: railway-calm theme ===== */
+/*
+  Appended, self-contained override block. Everything below is intentionally
+  unlayered so it wins over Tailwind's layered utilities without touching TSX.
+  Order matters: this must stay AFTER the OKLCH :root/.dark token blocks above.
+
+  Direction: dark-first, near-black surfaces, hairline borders, no drop
+  shadows, ~0.5rem radius, muted text hierarchy, restrained blue accent.
+*/
+
+/* -- tokens ------------------------------------------------------------- */
+:root {
+	--radius: 0.5rem;
+	--background: oklch(0.99 0 0);
+	--card: oklch(1 0 0);
+	--popover: oklch(1 0 0);
+	--primary: oklch(0.5 0.16 258);
+	--primary-foreground: oklch(0.985 0 0);
+	--muted: oklch(0.965 0 0);
+	--muted-foreground: oklch(0.5 0 0);
+	--accent: oklch(0.955 0 0);
+	--border: oklch(0.91 0 0);
+	--input: oklch(0.89 0 0);
+	--ring: oklch(0.55 0.14 258);
+	--sidebar: oklch(0.985 0 0);
+	--sidebar-foreground: oklch(0.42 0 0);
+	--sidebar-accent: oklch(0.94 0 0);
+	--sidebar-accent-foreground: oklch(0.145 0 0);
+	--sidebar-border: oklch(0.91 0 0);
+	--sidebar-ring: var(--ring);
+	--overlay: rgba(0, 0, 0, 0.35);
+}
+
+.dark {
+	--background: oklch(0.145 0 0);
+	--foreground: oklch(0.95 0 0);
+	--card: oklch(0.175 0 0);
+	--card-foreground: oklch(0.95 0 0);
+	--popover: oklch(0.19 0 0);
+	--popover-foreground: oklch(0.95 0 0);
+	--primary: oklch(0.64 0.15 258);
+	--primary-foreground: oklch(0.985 0 0);
+	--secondary: oklch(0.23 0 0);
+	--secondary-foreground: oklch(0.95 0 0);
+	--muted: oklch(0.22 0 0);
+	--muted-foreground: oklch(0.66 0 0);
+	--accent: oklch(0.23 0 0);
+	--accent-foreground: oklch(0.95 0 0);
+	--border: oklch(1 0 0 / 8%);
+	--input: oklch(1 0 0 / 10%);
+	--ring: oklch(0.6 0.13 258);
+	--sidebar: oklch(0.145 0 0);
+	--sidebar-foreground: oklch(0.68 0 0);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: oklch(1 0 0 / 6%);
+	--sidebar-accent-foreground: oklch(0.97 0 0);
+	--sidebar-border: oklch(1 0 0 / 7%);
+	--sidebar-ring: var(--ring);
+	--overlay: rgba(0, 0, 0, 0.6);
+}
+
+/* Tighter radius scale: rounded-xl (cards, dialogs) lands at ~10px. */
+@theme inline {
+	--radius-xl: calc(var(--radius) * 1.25);
+	--radius-2xl: calc(var(--radius) * 1.5);
+	--radius-3xl: calc(var(--radius) * 2);
+}
+
+/* -- surfaces ----------------------------------------------------------- */
+/* Cards: hairline ring in the border color, never a drop shadow. */
+[data-slot="card"] {
+	--tw-ring-color: var(--border);
+	--tw-shadow: 0 0 #0000;
+}
+
+/* Overlays keep a hairline; drop the heavy shadows. */
+[data-slot="dialog-content"],
+[data-slot="popover-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="select-content"],
+[data-slot="command"] {
+	--tw-ring-color: var(--border);
+	--tw-shadow: 0 0 #0000;
+}
+.dark [data-slot="sheet-content"] {
+	--tw-shadow: 0 0 #0000;
+}
+
+/* -- sidebar ------------------------------------------------------------ */
+/* Flush, full-height panel with a single hairline instead of a floating card. */
+[data-slot="sidebar"][data-variant="floating"] > [data-slot="sidebar-container"] {
+	padding: 0;
+}
+[data-slot="sidebar"][data-variant="floating"][data-collapsible="icon"] > [data-slot="sidebar-gap"],
+[data-slot="sidebar"][data-variant="floating"][data-collapsible="icon"] > [data-slot="sidebar-container"] {
+	width: var(--sidebar-width-icon);
+}
+[data-slot="sidebar"][data-variant="floating"] [data-slot="sidebar-inner"] {
+	border-radius: 0;
+	box-shadow: none;
+	border-inline-end: 1px solid var(--sidebar-border);
+}
+[data-slot="sidebar-group-label"] {
+	font-size: 0.6875rem;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+[data-slot="sidebar-menu-button"],
+[data-slot="sidebar-menu-sub-button"] {
+	transition-property: background-color, color, width, height, padding;
+	transition-duration: 120ms;
+}
+[data-slot="sidebar-menu-button"][data-active="true"],
+[data-slot="sidebar-menu-sub-button"][data-active="true"] {
+	background-color: var(--sidebar-accent);
+	color: var(--sidebar-accent-foreground);
+}
+[data-slot="sidebar-menu-sub"] {
+	border-color: var(--sidebar-border);
+}
+[data-slot="sidebar-rail"]:hover::after {
+	background-color: var(--border);
+}
+
+/* -- tabs --------------------------------------------------------------- */
+/* Default tab lists become an understated underline row. */
+[data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] {
+	height: auto;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	border-bottom: 1px solid var(--border);
+}
+[data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"] {
+	height: auto;
+	flex: 0 0 auto;
+	padding: 0.5rem 0.25rem 0.625rem;
+	border-radius: 0;
+	border-color: transparent;
+	background: transparent;
+	box-shadow: none;
+	color: var(--muted-foreground);
+}
+[data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"]:hover {
+	color: var(--foreground);
+}
+[data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"][data-state="active"] {
+	color: var(--foreground);
+}
+[data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"]::after {
+	inset-inline: 0;
+	bottom: -1px;
+	height: 1px;
+	background-color: var(--foreground);
+}
+[data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"][data-state="active"]::after {
+	opacity: 1;
+}
+/* Callers that space tabs with `gap-*` keep it; those that don't get a small default. */
+[data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"]:not([class*="gap-"]) {
+	gap: 1rem;
+}
+
+/* -- controls ----------------------------------------------------------- */
+/*
+  Tighter default control heights/radius. Matched on the component's stock
+  size class (`h-10`, `rounded-lg`, …): `cn()` runs tailwind-merge, so a caller
+  that passes its own `h-8` / `rounded-full` drops the stock token and opts out.
+*/
+[data-slot="button"][data-size="default"][class~="h-10"],
+[data-slot="input"][class~="h-10"],
+[data-slot="select-trigger"][data-size="default"]:not([class*=" h-"]) {
+	height: 2.25rem;
+}
+[data-slot="button"][data-size="sm"][class~="h-9"],
+[data-slot="select-trigger"][data-size="sm"]:not([class*=" h-"]) {
+	height: 2rem;
+}
+[data-slot="button"][data-size="icon"][class~="size-10"] {
+	height: 2.25rem;
+	width: 2.25rem;
+}
+[data-slot="button"][data-size="icon-sm"][class~="size-9"] {
+	height: 2rem;
+	width: 2rem;
+}
+[data-slot="button"][class~="rounded-lg"],
+[data-slot="input"][class~="rounded-lg"],
+[data-slot="textarea"][class~="rounded-lg"],
+[data-slot="select-trigger"][class~="rounded-lg"] {
+	border-radius: var(--radius-md);
+}
+/* Softer focus ring: 2px, low-alpha accent. */
+[data-slot="button"]:focus-visible,
+[data-slot="input"]:focus-visible,
+[data-slot="textarea"]:focus-visible,
+[data-slot="select-trigger"]:focus-visible,
+[data-slot="checkbox"]:focus-visible,
+[data-slot="switch"]:focus-visible,
+[data-slot="tabs-trigger"]:focus-visible {
+	--tw-ring-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 45%, transparent);
+	outline: none;
+}
+/* Primary buttons: flat, no translucent border, quiet hover. */
+[data-slot="button"][data-variant="default"] {
+	border-color: transparent;
+}
+[data-slot="button"][data-variant="default"]:hover {
+	background-color: color-mix(in oklch, var(--primary) 88%, var(--background));
+}
+
+/* -- scrollbars --------------------------------------------------------- */
+::-webkit-scrollbar {
+	width: 0.375rem;
+	height: 0.375rem;
+}
+::-webkit-scrollbar-thumb {
+	background: color-mix(in oklch, var(--muted-foreground) 25%, transparent);
+	border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: color-mix(in oklch, var(--muted-foreground) 45%, transparent);
+}
+* {
+	scrollbar-color: color-mix(in oklch, var(--muted-foreground) 25%, transparent) transparent;
+}
+/* ===== /dinghy: railway-calm theme ===== */
