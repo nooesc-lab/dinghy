@@ -3,7 +3,7 @@ import { FleetCharts } from "./fleet/fleet-charts";
 import { FleetHeader } from "./fleet/fleet-header";
 import { HostRoster } from "./fleet/host-roster";
 import { LocalDetail } from "./fleet/local-detail";
-import { useFleet } from "./fleet/use-fleet";
+import { LOCAL_HOST_KEY, useFleet } from "./fleet/use-fleet";
 
 /**
  * Fleet observability overview: one summary strip, one shared CPU chart and one
@@ -22,7 +22,7 @@ export const ServersHealth = () => {
 	const chartKeys = fleet.chartHosts.map((host) => host.key);
 	const isolated =
 		selected !== null && chartKeys.includes(selected) ? selected : null;
-	const local = fleet.hosts[0];
+	const local = fleet.hosts.find((host) => host.key === LOCAL_HOST_KEY);
 
 	return (
 		<div className="flex flex-col gap-4">
@@ -30,6 +30,7 @@ export const ServersHealth = () => {
 				summary={fleet.summary}
 				windowLabel={fleet.windowLabel}
 				sampleCount={fleet.samples.length}
+				maxSamples={fleet.maxSamples}
 			/>
 			<FleetCharts
 				fleet={fleet}

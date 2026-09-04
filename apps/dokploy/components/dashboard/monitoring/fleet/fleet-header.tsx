@@ -3,7 +3,7 @@ import { type DitherColor, DitherGradient } from "@/components/dither-kit";
 import { PALETTE, rgb } from "@/components/dither-kit/palette";
 import { hostCss } from "./palette";
 import { Collecting, Reveal } from "./primitives";
-import { type FleetSummary, MAX_SAMPLES, POLL_MS } from "./use-fleet";
+import type { FleetSummary } from "./use-fleet";
 
 interface TileProps {
 	label: string;
@@ -100,12 +100,14 @@ interface FleetHeaderProps {
 	summary: FleetSummary;
 	windowLabel: string;
 	sampleCount: number;
+	maxSamples: number;
 }
 
 export const FleetHeader = ({
 	summary,
 	windowLabel,
 	sampleCount,
+	maxSamples,
 }: FleetHeaderProps) => {
 	const down = summary.total - summary.online;
 	const memPct =
@@ -140,8 +142,7 @@ export const FleetHeader = ({
 								className="size-1.5 animate-pulse rounded-full bg-primary shadow-[0_0_8px] shadow-primary/60"
 							/>
 							<span className="tabular-nums">
-								{windowLabel} · {sampleCount}/{MAX_SAMPLES} samples · every{" "}
-								{POLL_MS / 1000}s
+								{windowLabel} · {sampleCount}/{maxSamples} samples
 							</span>
 						</div>
 					</div>

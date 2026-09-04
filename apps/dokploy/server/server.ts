@@ -12,6 +12,7 @@ import {
 	initVolumeBackupsCronJobs,
 	sendDokployRestartNotifications,
 	setupDirectories,
+	startFleetSampler,
 } from "@dokploy/server";
 import { config } from "dotenv";
 import next from "next";
@@ -68,6 +69,9 @@ void app.prepare().then(async () => {
 			await sendDokployRestartNotifications();
 		}
 		await initEnterpriseBackupCronJobs();
+
+		console.log("Starting Fleet Sampler");
+		startFleetSampler();
 
 		if (!IS_CLOUD) {
 			console.log("Starting Deployment Worker");

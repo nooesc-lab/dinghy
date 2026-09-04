@@ -44,7 +44,7 @@ const HostRow = ({
 	onSpotlight,
 }: HostRowProps) => {
 	const { status } = host;
-	const vitals = status.state === "online" ? status.data.vitals : null;
+	const vitals = status.state === "online" ? status.sample : null;
 	const diskPct =
 		vitals &&
 		vitals.diskUsedBytes !== null &&
@@ -129,8 +129,8 @@ const HostRow = ({
 								{status.state === "online" && (
 									<span className="hidden sm:inline">
 										{" "}
-										· {status.data.resources.cpuCount} cpu ·{" "}
-										{(status.data.resources.memTotalBytes / GIB).toFixed(0)} GiB
+										· {status.sample.cpuCount} cpu ·{" "}
+										{(status.sample.memTotalBytes / GIB).toFixed(0)} GiB
 									</span>
 								)}
 							</span>
@@ -140,7 +140,7 @@ const HostRow = ({
 					<Cell>{vitals?.uptimeSec != null ? formatUptime(vitals.uptimeSec) : pending}</Cell>
 					<Cell>{vitals?.loadAvg1 != null ? vitals.loadAvg1.toFixed(2) : pending}</Cell>
 					<Cell>
-						{status.state === "online" ? status.data.containers.containerCount : pending}
+						{status.state === "online" ? status.sample.containerCount : pending}
 					</Cell>
 
 					<span className="flex flex-col gap-1">

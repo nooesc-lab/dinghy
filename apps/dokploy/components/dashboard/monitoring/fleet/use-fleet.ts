@@ -1,21 +1,23 @@
-import type { ServerHealthResult } from "@dokploy/server/services/server-health";
 import { format } from "date-fns";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import type { ChartConfig } from "@/components/dither-kit";
-import { api } from "@/utils/api";
+import { api, type RouterOutputs } from "@/utils/api";
 import { type HostColor, hostColorAt } from "./palette";
 
 export const GIB = 1024 ** 3;
-export const POLL_MS = 15_000;
-/** 40 samples × 15s ≈ 10 minutes of history, kept client-side only. */
-export const MAX_SAMPLES = 40;
-/** After the first host answers in a poll cycle, wait this long for the rest before snapshotting a row. */
-const SETTLE_MS = 2_000;
+/** Sampler cadence and ring capacity assumed until the first payload lands; the server is authoritative. */
+export const POLL_MS = 5_000;
+export const MAX_SAMPLES = 720;
 
 export const LOCAL_HOST_KEY = "local";
 
+type FleetHistory = RouterOutputs["fleet"]["history"];
+type HistoryHost = FleetHistory["hosts"][number];
+/** One server-side sample of a host, as the sampler stores it. */
+export type Sample = HistoryHost["samples"][number];
+
 export interface FleetHost {
-	/** `${ipAddress}:${port}`, or `local` for the Dinghy host */
+	/** The serverId of the first registration for an endpoint, or `local` for the Dinghy host */
 	key: string;
 	/** Absent for the local host */
 	serverId?: string;
@@ -28,7 +30,7 @@ export interface FleetHost {
 
 export type HostStatus =
 	| { state: "checking" }
-	| { state: "online"; data: ServerHealthResult }
+	| { state: "online"; sample: Sample }
 	| { state: "unreachable"; error: string };
 
 export type FleetHostView = FleetHost & { status: HostStatus };
@@ -51,59 +53,76 @@ export interface FleetSample {
 /** A chart row: the formatted time plus one numeric column per host key. */
 export type SeriesRow = Record<string, number | string>;
 
-interface RegisteredServer {
-	serverId: string;
-	name: string;
-	ipAddress: string;
-	port: number;
-	createdAt: string;
-}
+const NO_HOSTS: HistoryHost[] = [];
 
-// One row per unique SSH endpoint; extra registrations become aliases. Sorted
-// by registration so palette slots stay put when a new server is added.
-const buildHosts = (servers: RegisteredServer[]): FleetHost[] => {
-	const byKey = new Map<string, FleetHost>();
-	const ordered = [...servers].sort((a, b) =>
-		a.createdAt < b.createdAt ? -1 : a.createdAt > b.createdAt ? 1 : 0,
-	);
-	for (const server of ordered) {
-		const key = `${server.ipAddress}:${server.port}`;
-		const host = byKey.get(key);
-		if (host) {
-			host.aliases.push(server.name);
-		} else {
-			byKey.set(key, {
-				key,
-				serverId: server.serverId,
-				name: server.name,
-				ip: server.ipAddress,
-				aliases: [],
-				color: hostColorAt(byKey.size + 1),
-			});
-		}
+// Local always takes palette slot 0; remotes follow in payload (registration)
+// order so a colour sticks to a host as the fleet grows.
+const buildViews = (hosts: HistoryHost[]): FleetHostView[] => {
+	const local = hosts.find((h) => h.hostKey === LOCAL_HOST_KEY);
+	const remotes = hosts.filter((h) => h.hostKey !== LOCAL_HOST_KEY);
+	const views: FleetHostView[] = [];
+	if (local) {
+		views.push(viewOf(local, hostColorAt(0), "Dinghy host"));
 	}
-	return [
-		{
-			key: LOCAL_HOST_KEY,
-			name: "Local",
-			ip: "Dinghy host",
-			aliases: [],
-			color: hostColorAt(0),
-		},
-		...byKey.values(),
-	];
+	remotes.forEach((host, i) => {
+		views.push(viewOf(host, hostColorAt(i + 1), host.ipAddress ?? "—"));
+	});
+	return views;
 };
 
-const readingOf = ({ vitals, containers }: ServerHealthResult): HostReading => ({
-	cpu: vitals.cpuPercent,
-	memPct:
-		vitals.memTotalBytes > 0
-			? (vitals.memUsedBytes / vitals.memTotalBytes) * 100
-			: null,
-	memUsedGiB: vitals.memUsedBytes / GIB,
-	memTotalGiB: vitals.memTotalBytes / GIB,
-	containers: containers.containerCount,
+const viewOf = (
+	host: HistoryHost,
+	color: HostColor,
+	ip: string,
+): FleetHostView => ({
+	key: host.hostKey,
+	serverId: host.serverId ?? undefined,
+	name: host.name,
+	ip,
+	aliases: host.aliases,
+	color,
+	status:
+		host.status === "ok" && host.latest
+			? { state: "online", sample: host.latest }
+			: host.status === "unreachable"
+				? { state: "unreachable", error: host.error ?? "unreachable" }
+				: { state: "checking" },
 });
+
+const readingOf = (sample: Sample): HostReading => ({
+	cpu: sample.cpuPercent,
+	memPct:
+		sample.memTotalBytes > 0
+			? (sample.memUsedBytes / sample.memTotalBytes) * 100
+			: null,
+	memUsedGiB: sample.memUsedBytes / GIB,
+	memTotalGiB: sample.memTotalBytes / GIB,
+	containers: sample.containerCount,
+});
+
+// Hosts sample at slightly different moments within a cycle, so their
+// timestamps are snapped to the sampler grid and merged into one row per tick.
+// A host that failed a tick simply has no reading in that row.
+const buildSamples = (
+	hosts: HistoryHost[],
+	pollMs: number,
+	maxSamples: number,
+): FleetSample[] => {
+	const byTick = new Map<number, FleetSample>();
+	for (const host of hosts) {
+		for (const sample of host.samples) {
+			const t = Math.round(sample.t / pollMs) * pollMs;
+			let row = byTick.get(t);
+			if (!row) {
+				row = { t, readings: {} };
+				byTick.set(t, row);
+			}
+			row.readings[host.hostKey] = readingOf(sample);
+		}
+	}
+	const rows = [...byTick.values()].sort((a, b) => a.t - b.t);
+	return rows.length > maxSamples ? rows.slice(rows.length - maxSamples) : rows;
+};
 
 interface Aggregate {
 	containers: number;
@@ -143,10 +162,14 @@ export interface FleetSummary extends Aggregate {
 export interface Fleet {
 	hosts: FleetHostView[];
 	samples: FleetSample[];
-	/** `live · last 4 min`, or a collecting hint before two samples exist */
+	/** Sampler interval, from the server */
+	pollMs: number;
+	/** Sampler ring capacity, from the server */
+	maxSamples: number;
+	/** `live · last 42 min · every 5s`, or a collecting hint before two samples exist */
 	windowLabel: string;
 	summary: FleetSummary;
-	/** Hosts with at least one reading in the window — the chart series */
+	/** Hosts with at least one sample in the window — the chart series */
 	chartHosts: FleetHostView[];
 	chartConfig: ChartConfig;
 	cpuRows: SeriesRow[];
@@ -154,125 +177,45 @@ export interface Fleet {
 }
 
 /**
- * Polls every deduped host on the same cadence and folds their readings into
- * one shared, time-aligned sample list so all hosts can share a chart.
- *
- * Hosts answer at slightly different moments within a cycle, so instead of
- * bucketing per-host timestamps we snapshot: the first answer of a cycle arms a
- * short settle timer, then one row is taken holding every host's latest
- * reading. Unreachable hosts simply have no reading in that row.
+ * Reads the server-side sampler's history for every host in the organisation
+ * and folds it into one shared, time-aligned sample list so all hosts can
+ * share a chart. The full window arrives on the first fetch, so the page is
+ * populated immediately; refetches on the sampler's own cadence keep it live.
  */
 export const useFleet = (): Fleet => {
-	const { data: servers } = api.server.all.useQuery();
-	const hosts = useMemo(() => buildHosts(servers ?? []), [servers]);
-
-	const results = api.useQueries((t) =>
-		hosts.map((host) =>
-			t.docker.getServerHealth(
-				host.serverId ? { serverId: host.serverId } : {},
-				{
-					refetchInterval: POLL_MS,
-					retry: false,
-					refetchOnWindowFocus: false,
-				},
-			),
-		),
-	);
-
-	const views: FleetHostView[] = hosts.map((host, i) => {
-		const result = results[i];
-		const failure = result?.error?.message ?? result?.data?.error;
-		const status: HostStatus = failure
-			? { state: "unreachable", error: failure }
-			: result?.data
-				? { state: "online", data: result.data }
-				: { state: "checking" };
-		return { ...host, status };
+	const { data } = api.fleet.history.useQuery(undefined, {
+		refetchInterval: (query) => query.state.data?.pollMs ?? POLL_MS,
+		refetchOnWindowFocus: false,
+		placeholderData: (prev) => prev,
 	});
+	const pollMs = data?.pollMs ?? POLL_MS;
+	const maxSamples = data?.maxSamples ?? MAX_SAMPLES;
+	const hosts = data?.hosts ?? NO_HOSTS;
 
-	// Latest reading per host, read by the snapshot timer through a ref so the
-	// timer never closes over a stale render.
-	const latest: Record<string, HostReading> = {};
-	for (const view of views) {
-		if (view.status.state === "online") {
-			latest[view.key] = readingOf(view.status.data);
-		}
-	}
-	const latestRef = useRef(latest);
-	useEffect(() => {
-		latestRef.current = latest;
-	});
-
-	const [samples, setSamples] = useState<FleetSample[]>([]);
-	const lastRowAt = useRef(0);
-	const timer = useRef<number | null>(null);
-
-	const snapshot = useCallback(() => {
-		const t = Date.now();
-		lastRowAt.current = t;
-		const sample: FleetSample = { t, readings: latestRef.current };
-		setSamples((prev) => {
-			const next =
-				prev.length >= MAX_SAMPLES
-					? prev.slice(prev.length - MAX_SAMPLES + 1)
-					: prev.slice();
-			next.push(sample);
-			return next;
-		});
-	}, []);
-
-	// Changes whenever any host answers (success or failure). The first row
-	// also waits for the server list, so remotes don't enter the window a row
-	// late and start their series from zero.
-	const updateSig = results
-		.map((r) => `${r.dataUpdatedAt}:${r.errorUpdatedAt}`)
-		.join("|");
-	const anySettled = servers !== undefined && results.some((r) => r.isFetched);
-	const allSettled = results.length > 0 && results.every((r) => r.isFetched);
-	const hasRows = samples.length > 0;
-
-	useEffect(() => {
-		if (timer.current !== null || !anySettled) return;
-		if (hasRows && Date.now() - lastRowAt.current < POLL_MS * 0.6) return;
-		const delay = !hasRows && allSettled ? 0 : SETTLE_MS;
-		timer.current = window.setTimeout(() => {
-			timer.current = null;
-			snapshot();
-		}, delay);
-	}, [updateSig, anySettled, allSettled, hasRows, snapshot]);
-
-	// Unmount only (StrictMode replays it): clear *and* reset, or the
-	// scheduling guard above would think a snapshot is still pending.
-	useEffect(
-		() => () => {
-			if (timer.current !== null) window.clearTimeout(timer.current);
-			timer.current = null;
-		},
-		[],
+	const views = useMemo(() => buildViews(hosts), [hosts]);
+	const samples = useMemo(
+		() => buildSamples(hosts, pollMs, maxSamples),
+		[hosts, pollMs, maxSamples],
 	);
 
-	// Series identity: hosts (status-free, stable per server list) that have
-	// answered at least once in the window. Memoized so the chart config keeps
-	// its identity between polls — the kit re-derives bands/series on change.
-	const chartKeys = useMemo(
-		() =>
-			hosts
-				.filter((host) =>
-					samples.some((s) => s.readings[host.key] !== undefined),
-				)
-				.map((host) => host.key),
-		[hosts, samples],
+	// Series identity: hosts with at least one sample in the window. Keyed on a
+	// signature so the chart config keeps its identity between polls — the kit
+	// re-derives bands/series on change.
+	const sampled = new Set(
+		hosts.filter((h) => h.samples.length > 0).map((h) => h.hostKey),
 	);
-
+	const chartHosts = views.filter((view) => sampled.has(view.key));
+	const chartSig = chartHosts
+		.map((host) => `${host.key}\u0000${host.name}\u0000${host.color}`)
+		.join("\n");
 	const chartConfig = useMemo<ChartConfig>(() => {
 		const config: ChartConfig = {};
-		for (const host of hosts) {
-			if (chartKeys.includes(host.key)) {
-				config[host.key] = { label: host.name, color: host.color };
-			}
+		for (const host of chartHosts) {
+			config[host.key] = { label: host.name, color: host.color };
 		}
 		return config;
-	}, [hosts, chartKeys]);
+	}, [chartSig]);
+	const chartKeys = useMemo(() => Object.keys(chartConfig), [chartConfig]);
 
 	const { cpuRows, memRows } = useMemo(() => {
 		const cpu: SeriesRow[] = [];
@@ -302,10 +245,16 @@ export const useFleet = (): Fleet => {
 		};
 	}, [samples]);
 
+	const latest: HostReading[] = [];
+	for (const view of views) {
+		if (view.status.state === "online") {
+			latest.push(readingOf(view.status.sample));
+		}
+	}
 	const summary: FleetSummary = {
-		online: views.filter((v) => v.status.state === "online").length,
+		online: latest.length,
 		total: views.length,
-		...aggregate(Object.values(latest)),
+		...aggregate(latest),
 		history,
 	};
 
@@ -313,15 +262,17 @@ export const useFleet = (): Fleet => {
 	const last = samples[samples.length - 1];
 	const windowLabel =
 		first && last && samples.length > 1
-			? `live · last ${formatWindow(last.t - first.t)}`
+			? `live · last ${formatWindow(last.t - first.t)} · every ${pollMs / 1000}s`
 			: "collecting samples…";
 
 	return {
 		hosts: views,
 		samples,
+		pollMs,
+		maxSamples,
 		windowLabel,
 		summary,
-		chartHosts: views.filter((v) => chartKeys.includes(v.key)),
+		chartHosts,
 		chartConfig,
 		cpuRows,
 		memRows,
