@@ -2,7 +2,6 @@
 import type { inferRouterOutputs } from "@trpc/server";
 import {
 	Activity,
-	BarChartHorizontalBigIcon,
 	Bell,
 	BlocksIcon,
 	BookIcon,
@@ -185,15 +184,6 @@ const MENU: Menu = {
 			icon: LayoutGrid,
 			// dinghy: hidden from nav (reachable via deep link)
 			isEnabled: () => false,
-		},
-		{
-			isSingle: true,
-			title: "Monitoring",
-			url: "/dashboard/monitoring",
-			icon: BarChartHorizontalBigIcon,
-			// Only enabled in non-cloud environments and if user has monitoring.read
-			isEnabled: ({ isCloud, permissions }) =>
-				!isCloud && !!permissions?.monitoring.read,
 		},
 		{
 			isSingle: false,

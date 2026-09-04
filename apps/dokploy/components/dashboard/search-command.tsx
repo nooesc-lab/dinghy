@@ -185,11 +185,11 @@ export const SearchCommand = () => {
 							<>
 								<CommandItem
 									onSelect={() => {
-										router.push("/dashboard/monitoring");
+										router.push("/dashboard/home#fleet");
 										setOpen(false);
 									}}
 								>
-									Monitoring
+									Fleet
 								</CommandItem>
 								<CommandItem
 									onSelect={() => {

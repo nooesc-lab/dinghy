@@ -162,10 +162,6 @@ export interface FleetSummary extends Aggregate {
 export interface Fleet {
 	hosts: FleetHostView[];
 	samples: FleetSample[];
-	/** Sampler interval, from the server */
-	pollMs: number;
-	/** Sampler ring capacity, from the server */
-	maxSamples: number;
 	/** `live · last 42 min · every 5s`, or a collecting hint before two samples exist */
 	windowLabel: string;
 	summary: FleetSummary;
@@ -183,7 +179,7 @@ export interface Fleet {
  * populated immediately; refetches on the sampler's own cadence keep it live.
  *
  * `enabled: false` skips the query entirely (the summary reads as an empty
- * fleet) — for surfaces that only show the strip when the viewer may see it.
+ * fleet) — for viewers who may not see the fleet at all.
  */
 export const useFleet = ({ enabled = true }: { enabled?: boolean } = {}): Fleet => {
 	const { data } = api.fleet.history.useQuery(undefined, {
@@ -272,8 +268,6 @@ export const useFleet = ({ enabled = true }: { enabled?: boolean } = {}): Fleet 
 	return {
 		hosts: views,
 		samples,
-		pollMs,
-		maxSamples,
 		windowLabel,
 		summary,
 		chartHosts,

@@ -77,6 +77,8 @@ interface FleetChartsProps {
 	fleet: Fleet;
 	selected: string | null;
 	focus: string | null;
+	/** Reveal offset of the chip row; the two panels follow it */
+	delay: number;
 	onSelect: (key: string | null) => void;
 	onSpotlight: (key: string | null) => void;
 }
@@ -85,6 +87,7 @@ export const FleetCharts = ({
 	fleet,
 	selected,
 	focus,
+	delay,
 	onSelect,
 	onSpotlight,
 }: FleetChartsProps) => {
@@ -109,9 +112,12 @@ export const FleetCharts = ({
 	}, [samples]);
 
 	return (
-		<section className="flex flex-col gap-3" aria-label="Shared fleet charts">
-			<Reveal delay={0.2} className="flex flex-wrap items-center gap-2 px-1">
-				<span className="gh-eyebrow mr-1">Hosts</span>
+		<div className="flex flex-col gap-3">
+			<Reveal
+				delay={delay}
+				className="flex flex-wrap items-center gap-2 px-1"
+			>
+				<span className="gh-eyebrow mr-1">Fleet</span>
 				{hosts.map((host) => (
 					<HostChip
 						key={host.key}
@@ -135,7 +141,7 @@ export const FleetCharts = ({
 					eyebrow="CPU"
 					title="Utilisation, every host"
 					note="% of each host"
-					delay={0.25}
+					delay={delay + 0.05}
 					ready={ready}
 				>
 					<AreaChart
@@ -164,7 +170,7 @@ export const FleetCharts = ({
 					eyebrow="Memory"
 					title="In use, every host"
 					note="% of each host's total · GiB on hover"
-					delay={0.3}
+					delay={delay + 0.1}
 					ready={ready}
 				>
 					<AreaChart
@@ -199,6 +205,6 @@ export const FleetCharts = ({
 					</AreaChart>
 				</Panel>
 			</div>
-		</section>
+		</div>
 	);
 };

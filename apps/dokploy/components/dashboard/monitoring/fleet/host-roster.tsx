@@ -181,6 +181,7 @@ interface HostRosterProps {
 	hosts: FleetHostView[];
 	chartKeys: string[];
 	selected: string | null;
+	delay: number;
 	onSelect: (key: string | null) => void;
 	onSpotlight: (key: string | null) => void;
 }
@@ -189,10 +190,11 @@ export const HostRoster = ({
 	hosts,
 	chartKeys,
 	selected,
+	delay,
 	onSelect,
 	onSpotlight,
 }: HostRosterProps) => (
-	<Reveal delay={0.35}>
+	<Reveal delay={delay}>
 		<section className="gh-surface rounded-lg" aria-label="Host roster">
 			<div className="flex items-baseline justify-between gap-3 px-4 pt-4 pb-3">
 				<div className="flex flex-col gap-0.5">
@@ -225,7 +227,7 @@ export const HostRoster = ({
 						selected={selected === host.key}
 						dimmed={selected !== null && selected !== host.key}
 						isolatable={chartKeys.includes(host.key)}
-						delay={0.4 + i * 0.04}
+						delay={delay + 0.05 + i * 0.04}
 						onSelect={onSelect}
 						onSpotlight={onSpotlight}
 					/>

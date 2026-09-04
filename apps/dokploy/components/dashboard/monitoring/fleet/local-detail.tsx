@@ -7,6 +7,7 @@ import type { FleetHostView } from "./use-fleet";
 
 interface LocalDetailProps {
 	host: FleetHostView;
+	delay: number;
 }
 
 /**
@@ -14,12 +15,12 @@ interface LocalDetailProps {
  * fleet view. Collapsed by default: expanding mounts the component, which is
  * what opens its stats WebSocket.
  */
-export const LocalDetail = ({ host }: LocalDetailProps) => {
+export const LocalDetail = ({ host, delay }: LocalDetailProps) => {
 	const [expanded, setExpanded] = useState(false);
 	const bodyId = useId();
 
 	return (
-		<Reveal delay={0.5}>
+		<Reveal delay={delay}>
 			<section className="gh-surface rounded-lg">
 				<button
 					type="button"
