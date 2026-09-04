@@ -6,6 +6,7 @@ import type { GetServerSidePropsContext } from "next";
 import type { ReactElement } from "react";
 import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
 import { ShowPaidMonitoring } from "@/components/dashboard/monitoring/paid/servers/show-paid-monitoring";
+import { ServersHealth } from "@/components/dashboard/monitoring/servers-health";
 import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { Card } from "@/components/ui/card";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
@@ -24,6 +25,7 @@ const Dashboard = () => {
 	const { data: monitoring, isPending } = api.user.getMetricsToken.useQuery();
 	return (
 		<div className="space-y-4 pb-10">
+			<ServersHealth />
 			{/* <AlertBlock>
 				You are watching the <strong>Free</strong> plan.{" "}
 				<a
