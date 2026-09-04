@@ -479,6 +479,14 @@ function createMenuForAuthUser(opts: {
 					}),
 		) as T[];
 
+	// dinghy: also apply `isEnabled` to group sub-items and drop emptied groups
+	const filterNav = (items: readonly NavItem[]): NavItem[] =>
+		filterEnabled(items).flatMap((item): NavItem[] => {
+			if (item.isSingle !== false) return [item];
+			const subItems = filterEnabled(item.items);
+			return subItems.length ? [{ ...item, items: subItems }] : [];
+		});
+
 	// Apply whitelabeling URL overrides to help items
 	const helpItems = filterEnabled(MENU.help).map((item) => {
 		if (opts.whitelabeling?.docsUrl && item.name === "Documentation") {
@@ -491,8 +499,8 @@ function createMenuForAuthUser(opts: {
 	});
 
 	return {
-		home: filterEnabled(MENU.home),
-		settings: filterEnabled(MENU.settings),
+		home: filterNav(MENU.home),
+		settings: filterNav(MENU.settings),
 		help: helpItems,
 	};
 }
@@ -1043,7 +1051,8 @@ export default function Page({ children }: Props) {
 																<SidebarMenuSubItem key={subItem.title}>
 																	<SidebarMenuSubButton
 																		asChild
-																		className={cn(isActive && "bg-border")}
+																		// dinghy: highlight only the active sub-item, not every sibling
+																		isActive={isActiveRoute({ itemUrl: subItem.url, pathname })}
 																	>
 																		<Link
 																			href={subItem.url}
@@ -1054,7 +1063,7 @@ export default function Page({ children }: Props) {
 																					<subItem.icon
 																						className={cn(
 																							"h-4 w-4 text-muted-foreground",
-																							isActive && "text-primary",
+																							isActiveRoute({ itemUrl: subItem.url, pathname }) && "text-primary",
 																						)}
 																					/>
 																				</span>
@@ -1132,7 +1141,8 @@ export default function Page({ children }: Props) {
 																<SidebarMenuSubItem key={subItem.title}>
 																	<SidebarMenuSubButton
 																		asChild
-																		className={cn(isActive && "bg-border")}
+																		// dinghy: highlight only the active sub-item, not every sibling
+																		isActive={isActiveRoute({ itemUrl: subItem.url, pathname })}
 																	>
 																		<Link
 																			href={subItem.url}
@@ -1143,7 +1153,7 @@ export default function Page({ children }: Props) {
 																					<subItem.icon
 																						className={cn(
 																							"h-4 w-4 text-muted-foreground",
-																							isActive && "text-primary",
+																							isActiveRoute({ itemUrl: subItem.url, pathname }) && "text-primary",
 																						)}
 																					/>
 																				</span>
