@@ -1127,7 +1127,7 @@ const EnvironmentPage = (
 												)}
 												onCheckedChange={handleSelectAll}
 											/>
-											<span className="text-sm">
+											<span className="text-xs text-muted-foreground">
 												Select All{" "}
 												{selectedServices.length > 0 &&
 													`(${selectedServices.length}/${filteredServices.length})`}
@@ -1141,6 +1141,8 @@ const EnvironmentPage = (
 											<DropdownMenuTrigger asChild>
 												<Button
 													variant="outline"
+													size="sm"
+													className="gh-interactive h-8"
 													disabled={selectedServices.length === 0}
 													isLoading={isBulkActionLoading}
 												>
@@ -1666,24 +1668,17 @@ const EnvironmentPage = (
 																	</div>
 
 																	<div
-																		className={cn(
-																			"absolute -left-3 -bottom-3 size-9 translate-y-1 rounded-full p-0 transition-all duration-200 z-10 bg-background border",
-																			selectedServices.includes(service.id)
-																				? "opacity-100 translate-y-0"
-																				: "opacity-0 group-hover:translate-y-0 group-hover:opacity-100",
-																		)}
+																		className="absolute left-2 top-2 z-10"
 																		onClick={(e) =>
 																			handleServiceSelect(service.id, e)
 																		}
 																	>
-																		<div className="h-full w-full flex items-center justify-center">
-																			<Checkbox
-																				checked={selectedServices.includes(
-																					service.id,
-																				)}
-																				className="data-[state=checked]:bg-primary"
-																			/>
-																		</div>
+																		<Checkbox
+																			checked={selectedServices.includes(
+																				service.id,
+																			)}
+																			className="size-4 rounded-[4px] border-border bg-card opacity-0 transition-opacity group-hover/card:opacity-100 data-[state=checked]:opacity-100 data-[state=checked]:bg-primary"
+																		/>
 																	</div>
 
 																	<CardHeader>
