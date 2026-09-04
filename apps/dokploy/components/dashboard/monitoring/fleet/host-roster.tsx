@@ -6,7 +6,13 @@ import { Reveal } from "./primitives";
 import { type FleetHostView, formatUptime, GIB } from "./use-fleet";
 
 const COLUMNS =
-	"grid-cols-[minmax(0,1fr)_7rem] sm:grid-cols-[minmax(0,1fr)_5rem_5rem_5.5rem_8rem]";
+	"grid-cols-[minmax(0,1fr)_7rem] sm:grid-cols-[minmax(0,1fr)_5rem_5rem_5.5rem_11rem]";
+
+/** GiB below a tebibyte, TiB with one decimal above — keeps 1.9 TB roots readable. */
+const formatBytes = (bytes: number) =>
+	bytes >= GIB * 1024
+		? `${(bytes / (GIB * 1024)).toFixed(1)} TiB`
+		: `${(bytes / GIB).toFixed(0)} GiB`;
 
 interface CellProps {
 	children: ReactNode;
@@ -149,7 +155,7 @@ const HostRow = ({
 							<span>
 								{diskPct === null
 									? pending
-									: `${diskPct.toFixed(0)}% · ${((vitals?.diskUsedBytes ?? 0) / GIB).toFixed(0)} GiB`}
+									: `${diskPct.toFixed(0)}% · ${formatBytes(vitals?.diskUsedBytes ?? 0)} / ${formatBytes(vitals?.diskTotalBytes ?? 0)}`}
 							</span>
 						</span>
 						<span className="h-1 w-full overflow-hidden rounded-full bg-muted">
