@@ -58,7 +58,7 @@ function paintButton(
       if (variant === "hatched" && ((x + y) & 3) >= 2) continue
       const lit =
         variant === "solid" ||
-        density > BAYER4[y & 3][x & 3] - 0.1 * intensity - bias
+        density > (BAYER4[y & 3]?.[x & 3] ?? 0) - 0.1 * intensity - bias
       if (variant === "dotted" && !lit) continue
       const k = (0.3 + density * 0.7) * (1 + 0.22 * intensity)
       ctx.fillStyle = rgb(fill, 1, clamp01(lit ? k : k * 0.4))

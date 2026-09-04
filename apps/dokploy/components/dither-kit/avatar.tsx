@@ -75,8 +75,8 @@ function avatarModel(
       const i = vertical
         ? Math.min(r, GRID - 1 - r) * GRID + c
         : r * (GRID / 2) + Math.min(c, GRID - 1 - c)
-      on[r * GRID + c] = bits[i]
-      density[r * GRID + c] = halfDensity[i]
+      on[r * GRID + c] = bits[i] ?? false
+      density[r * GRID + c] = halfDensity[i] ?? 1
     }
   }
   return { on, density, fill: hueFill(hue) }
@@ -112,16 +112,16 @@ function paintAvatar(
         if (!model.on[r * GRID + c]) continue
         // Cells materialize in Bayer order — the entrance is made of the same
         // matrix as the texture.
-        const start = BAYER4[r % 4][c % 4] * 0.7
+        const start = (BAYER4[r % 4]?.[c % 4] ?? 0) * 0.7
         const cellAlpha = clamp01((progress - start) / 0.3)
         if (cellAlpha <= 0) continue
-        const density = model.density[r * GRID + c]
+        const density = model.density[r * GRID + c] ?? 0
         const base = 0.35 + 0.65 * density
         for (let py = 0; py < CELL_PX; py++) {
           for (let pxi = 0; pxi < CELL_PX; pxi++) {
             const gx = c * CELL_PX + pxi
             const gy = r * CELL_PX + py
-            const lit = density > BAYER4[gy & 3][gx & 3]
+            const lit = density > (BAYER4[gy & 3]?.[gx & 3] ?? 0)
             // On/off cells modulate alpha tiers of the one fill colour, so the
             // avatar holds up on light and dark backgrounds alike.
             const alpha = (lit ? base : base * 0.35) * cellAlpha

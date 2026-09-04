@@ -95,6 +95,7 @@ export function PieCanvas() {
           const si = sliceAtAngle(slices, angle)
           if (si < 0) continue
           const slice = slices[si]
+          if (!slice) continue
           const active = s.hoverIndex === si
           const localOuter = active ? outerR + POP * popEase : outerR
           if (r > localOuter) continue
@@ -116,7 +117,7 @@ export function PieCanvas() {
           if (variant === "hatched" && ((x + y) & 3) >= 2) continue
           const lit =
             variant === "solid" ||
-            density > BAYER[y & 3][x & 3] - 0.1 * it - bias
+            density > (BAYER[y & 3]?.[x & 3] ?? 0) - 0.1 * it - bias
           if (variant === "dotted" && !lit) continue
           // Density → opacity (see the colour-vs-opacity note in dither-paint);
           // off cells drop to a faint tier, never a hole to the background.

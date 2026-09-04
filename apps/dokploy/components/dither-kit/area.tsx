@@ -66,7 +66,9 @@ function CartesianSeries({
       parts.push(`${i === 0 ? "M" : "L"}${ctx.xCenter(i)},${ctx.y(b[1])}`)
     })
     for (let i = band.length - 1; i >= 0; i -= 1) {
-      parts.push(`L${ctx.xCenter(i)},${ctx.y(band[i][0])}`)
+      const b = band[i]
+      if (!b) continue
+      parts.push(`L${ctx.xCenter(i)},${ctx.y(b[0])}`)
     }
     hitPath = `${parts.join(" ")} Z`
   }
@@ -82,9 +84,9 @@ function CartesianSeries({
           onClick={onClick}
         />
       )}
-      <SeriesContext value={{ dataKey, seed, dimmed }}>
+      <SeriesContext.Provider value={{ dataKey, seed, dimmed }}>
         {children}
-      </SeriesContext>
+      </SeriesContext.Provider>
     </>
   )
 }

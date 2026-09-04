@@ -1,0 +1,236 @@
+import type { ReactNode } from "react";
+import { DitherAvatar } from "@/components/dither-kit";
+import { cn } from "@/lib/utils";
+import { hostCss, hostHue } from "./palette";
+import { Reveal } from "./primitives";
+import { type FleetHostView, formatUptime, GIB } from "./use-fleet";
+
+const COLUMNS =
+	"grid-cols-[minmax(0,1fr)_7rem] sm:grid-cols-[minmax(0,1fr)_5rem_5rem_5.5rem_8rem]";
+
+interface CellProps {
+	children: ReactNode;
+	className?: string;
+}
+
+const Cell = ({ children, className }: CellProps) => (
+	<span
+		className={cn(
+			"hidden text-right font-mono text-xs tabular-nums text-muted-foreground sm:block",
+			className,
+		)}
+	>
+		{children}
+	</span>
+);
+
+interface HostRowProps {
+	host: FleetHostView;
+	selected: boolean;
+	dimmed: boolean;
+	isolatable: boolean;
+	delay: number;
+	onSelect: (key: string | null) => void;
+	onSpotlight: (key: string | null) => void;
+}
+
+const HostRow = ({
+	host,
+	selected,
+	dimmed,
+	isolatable,
+	delay,
+	onSelect,
+	onSpotlight,
+}: HostRowProps) => {
+	const { status } = host;
+	const vitals = status.state === "online" ? status.data.vitals : null;
+	const diskPct =
+		vitals &&
+		vitals.diskUsedBytes !== null &&
+		vitals.diskTotalBytes !== null &&
+		vitals.diskTotalBytes > 0
+			? (vitals.diskUsedBytes / vitals.diskTotalBytes) * 100
+			: null;
+	const pending = status.state === "checking" ? "…" : "—";
+
+	const dot =
+		status.state === "online"
+			? { backgroundColor: hostCss(host.color), boxShadow: `0 0 8px ${hostCss(host.color, 0.6)}` }
+			: status.state === "unreachable"
+				? { backgroundColor: "var(--destructive)" }
+				: { backgroundColor: "var(--muted-foreground)" };
+
+	return (
+		<Reveal as="li" delay={delay}>
+			{/* Dimming lives one level down: motion owns the li's inline opacity. */}
+			<div
+				className={cn(
+					"transition-opacity duration-150",
+					dimmed && "opacity-50",
+				)}
+			>
+				<button
+					type="button"
+					disabled={!isolatable}
+					aria-pressed={selected}
+					onClick={() => onSelect(selected ? null : host.key)}
+					onPointerEnter={() => onSpotlight(host.key)}
+					onPointerLeave={() => onSpotlight(null)}
+					onFocus={() => onSpotlight(host.key)}
+					onBlur={() => onSpotlight(null)}
+					className={cn(
+						"gh-interactive grid w-full items-center gap-3 px-4 py-2.5 text-left disabled:cursor-default",
+						COLUMNS,
+					)}
+					style={{
+						backgroundColor: selected ? hostCss(host.color, 0.08) : undefined,
+						boxShadow: selected ? `inset 2px 0 0 ${hostCss(host.color)}` : undefined,
+					}}
+				>
+					<span className="flex min-w-0 items-center gap-3">
+						<span className="relative shrink-0">
+							<DitherAvatar
+								name={host.name}
+								hue={hostHue(host.color)}
+								size={28}
+								bloom="low"
+								className="rounded-[3px]"
+							/>
+							<span
+								aria-hidden
+								className={cn(
+									"absolute -right-1 -bottom-1 size-2 rounded-full ring-2 ring-card",
+									status.state === "checking" && "animate-pulse",
+								)}
+								style={dot}
+							/>
+						</span>
+						<span className="flex min-w-0 flex-col">
+							<span className="flex min-w-0 items-baseline gap-2">
+								<span className="truncate text-sm font-medium">{host.name}</span>
+								{host.aliases.length > 0 && (
+									<span
+										className="truncate text-[11px] text-muted-foreground/70"
+										title={`Also registered as ${host.aliases.join(", ")}`}
+									>
+										+{host.aliases.length} alias
+										{host.aliases.length === 1 ? "" : "es"}
+									</span>
+								)}
+								{status.state === "unreachable" && (
+									<span className="shrink-0 rounded-sm bg-destructive/15 px-1 font-mono text-[10px] uppercase tracking-[0.08em] text-destructive">
+										unreachable
+									</span>
+								)}
+							</span>
+							<span className="truncate font-mono text-[11px] text-muted-foreground">
+								{host.ip}
+								{status.state === "online" && (
+									<span className="hidden sm:inline">
+										{" "}
+										· {status.data.resources.cpuCount} cpu ·{" "}
+										{(status.data.resources.memTotalBytes / GIB).toFixed(0)} GiB
+									</span>
+								)}
+							</span>
+						</span>
+					</span>
+
+					<Cell>{vitals?.uptimeSec != null ? formatUptime(vitals.uptimeSec) : pending}</Cell>
+					<Cell>{vitals?.loadAvg1 != null ? vitals.loadAvg1.toFixed(2) : pending}</Cell>
+					<Cell>
+						{status.state === "online" ? status.data.containers.containerCount : pending}
+					</Cell>
+
+					<span className="flex flex-col gap-1">
+						<span className="flex items-baseline justify-between font-mono text-[11px] tabular-nums text-muted-foreground">
+							<span className="gh-eyebrow">disk</span>
+							<span>
+								{diskPct === null
+									? pending
+									: `${diskPct.toFixed(0)}% · ${((vitals?.diskUsedBytes ?? 0) / GIB).toFixed(0)} GiB`}
+							</span>
+						</span>
+						<span className="h-1 w-full overflow-hidden rounded-full bg-muted">
+							<span
+								className="block h-full rounded-full transition-[width] duration-700"
+								style={{
+									width: `${diskPct ?? 0}%`,
+									backgroundColor: hostCss(host.color),
+									boxShadow: `0 0 6px ${hostCss(host.color, 0.5)}`,
+								}}
+							/>
+						</span>
+					</span>
+				</button>
+				{status.state === "unreachable" && (
+					<p
+						className="break-words px-4 pb-2.5 pl-14 font-mono text-[11px] text-destructive/80"
+						title={status.error}
+					>
+						{status.error}
+					</p>
+				)}
+			</div>
+		</Reveal>
+	);
+};
+
+interface HostRosterProps {
+	hosts: FleetHostView[];
+	chartKeys: string[];
+	selected: string | null;
+	onSelect: (key: string | null) => void;
+	onSpotlight: (key: string | null) => void;
+}
+
+export const HostRoster = ({
+	hosts,
+	chartKeys,
+	selected,
+	onSelect,
+	onSpotlight,
+}: HostRosterProps) => (
+	<Reveal delay={0.35}>
+		<section className="gh-surface rounded-lg" aria-label="Host roster">
+			<div className="flex items-baseline justify-between gap-3 px-4 pt-4 pb-3">
+				<div className="flex flex-col gap-0.5">
+					<span className="gh-eyebrow">Roster</span>
+					<span className="text-sm font-medium">
+						{hosts.length} host{hosts.length === 1 ? "" : "s"}
+					</span>
+				</div>
+				<span className="font-mono text-[11px] text-muted-foreground">
+					one row per endpoint · click to isolate
+				</span>
+			</div>
+			<div
+				className={cn(
+					"grid gap-3 border-b border-border px-4 pb-1.5",
+					COLUMNS,
+				)}
+			>
+				<span className="gh-eyebrow">host</span>
+				<Cell className="gh-eyebrow">uptime</Cell>
+				<Cell className="gh-eyebrow">load</Cell>
+				<Cell className="gh-eyebrow">containers</Cell>
+				<span />
+			</div>
+			<ul className="divide-y divide-border">
+				{hosts.map((host, i) => (
+					<HostRow
+						key={host.key}
+						host={host}
+						selected={selected === host.key}
+						dimmed={selected !== null && selected !== host.key}
+						isolatable={chartKeys.includes(host.key)}
+						delay={0.4 + i * 0.04}
+						onSelect={onSelect}
+						onSpotlight={onSpotlight}
+					/>
+				))}
+			</ul>
+		</section>
+	</Reveal>
+);

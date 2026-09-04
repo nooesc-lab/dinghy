@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { type ChartContextValue, useChart } from "./chart-context"
 import {
   backingSize,
@@ -13,14 +13,18 @@ import { rgb } from "./palette"
 type Star = { key: string; xi: number; depth: number; phase: number }
 type Surface = { top: number[]; floor: number[] }
 
+// The loop's refs are written in an effect before it can read them, so they
+// are always populated — unlike a DOM `RefObject`, whose current may be null.
+type Cell<T> = { current: T }
+
 type LoopArgs = {
   canvas: HTMLCanvasElement
   bloomCanvas: HTMLCanvasElement | null
   cols: number
   rows: number
-  state: RefObject<ChartContextValue>
-  targets: RefObject<Record<string, Surface>>
-  stars: RefObject<Star[]>
+  state: Cell<ChartContextValue>
+  targets: Cell<Record<string, Surface>>
+  stars: Cell<Star[]>
 }
 
 /**
@@ -152,15 +156,19 @@ function startCartesianLoop({
         continue
       }
       for (let x = 0; x < cols; x++) {
-        const dt = t.top[x] - cur.top[x]
-        const df = t.floor[x] - cur.floor[x]
+        const tt = t.top[x] ?? 0
+        const tf = t.floor[x] ?? 0
+        const ct = cur.top[x] ?? 0
+        const cf = cur.floor[x] ?? 0
+        const dt = tt - ct
+        const df = tf - cf
         if (Math.abs(dt) > 0.01 || Math.abs(df) > 0.01) {
-          cur.top[x] += dt * EASE
-          cur.floor[x] += df * EASE
+          cur.top[x] = ct + dt * EASE
+          cur.floor[x] = cf + df * EASE
           moving = true
         } else {
-          cur.top[x] = t.top[x]
-          cur.floor[x] = t.floor[x]
+          cur.top[x] = tt
+          cur.floor[x] = tf
         }
       }
     }
@@ -316,7 +324,9 @@ export function CartesianCanvas() {
       const line = (seriesSpecs[key]?.kind ?? defaultKind) === "line"
       const top = band.map((b) => (y(b[1]) / h) * (rows - 1))
       const floor = band.map((b, i) =>
-        line ? Math.min(rows - 1, top[i] + glow) : (y(b[0]) / h) * (rows - 1)
+        line
+          ? Math.min(rows - 1, (top[i] ?? 0) + glow)
+          : (y(b[0]) / h) * (rows - 1)
       )
       out[key] = { top: resample(top, cols), floor: resample(floor, cols) }
     }

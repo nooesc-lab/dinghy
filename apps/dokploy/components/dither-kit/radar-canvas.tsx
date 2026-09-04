@@ -100,7 +100,9 @@ export function RadarCanvas() {
           // through, instead of tinting the overlap into a muddy blend.
           let covered = false
           for (let pi = 0; pi < polys.length; pi++) {
-            const { key, poly } = polys[pi]
+            const entry = polys[pi]
+            if (!entry) continue
+            const { key, poly } = entry
             if (!pointInPolygon(px, py, poly)) continue
             const seed = s.seedOf(key)
             const variant = s.variantOf(key)
