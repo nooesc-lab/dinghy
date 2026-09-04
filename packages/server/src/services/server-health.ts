@@ -62,6 +62,18 @@ export interface ServerHealthResult {
 		appCount: number;
 		unsupportedComposeCount: number;
 	} | null;
+	/** Live host vitals, SSH-polled; each sub-metric is null when it couldn't be read on the target */
+	vitals: {
+		/** Whole-host CPU utilization 0-100 from a ~500ms /proc/stat delta */
+		cpuPercent: number | null;
+		loadAvg1: number | null;
+		memUsedBytes: number;
+		memTotalBytes: number;
+		/** Root filesystem */
+		diskUsedBytes: number | null;
+		diskTotalBytes: number | null;
+		uptimeSec: number | null;
+	};
 	error?: string;
 }
 
@@ -83,11 +95,25 @@ interface RawHealthOutput {
 	daemonErrorsBase64?: string;
 	daemonLogsFromEpoch?: number | string;
 	daemonLogsToEpoch?: number | string;
+	vitalsCpuPercent?: number | string | null;
+	vitalsLoadAvg1?: number | string | null;
+	vitalsMemTotalBytes?: number | string | null;
+	vitalsMemUsedBytes?: number | string | null;
+	vitalsDiskTotalBytes?: number | string | null;
+	vitalsDiskUsedBytes?: number | string | null;
+	vitalsUptimeSec?: number | string | null;
 }
 
 const toInt = (value: unknown): number => {
 	const n = Number.parseInt(String(value ?? "0"), 10);
 	return Number.isFinite(n) ? n : 0;
+};
+
+/** Missing, empty, or non-numeric input maps to null so the UI can tell "unknown" from 0. */
+const toNullableNumber = (value: unknown): number | null => {
+	if (value === null || value === undefined || value === "") return null;
+	const n = Number(value);
+	return Number.isFinite(n) ? n : null;
 };
 
 const b64Decode = (value?: string): string => {
@@ -125,7 +151,21 @@ daemonLogsFromEpoch=$((daemonLogsToEpoch - ${sinceHours} * 3600))
 
 daemonErrorsB64=$(journalctl -u docker --no-pager --since "${sinceHours} hours ago" 2>/dev/null | grep -iE "inotify|too many open|cannot allocate|oom|conntrack|no space|pids.max|fork:|resource temporarily unavailable|could not find an available ip|no available ip|task allocation failure|address already in use" | tail -n 50 | base64 2>/dev/null | tr -d '\\n')
 
-printf '{"containerCount":%s,"serviceCount":%s,"memTotalBytes":%s,"memUsedBytes":%s,"cpuCount":%s,"inotifyMaxWatches":%s,"inotifyMaxInstances":%s,"inotifyMaxQueuedEvents":%s,"inotifyCurrentInstances":%s,"inotifyPersistedCount":%s,"diskTotalBytes":%s,"diskUsedBytes":%s,"networkCount":%s,"daemonConfigBase64":"%s","daemonErrorsBase64":"%s","daemonLogsFromEpoch":%s,"daemonLogsToEpoch":%s}' "$containerCount" "$serviceCount" "$memTotal" "$memUsed" "$cpuCount" "$inotifyMaxWatches" "$inotifyMaxInstances" "$inotifyMaxQueued" "$inotifyCurrentInstances" "$inotifyPersistedCount" "$diskTotal" "$diskUsed" "$networkCount" "$daemonConfigB64" "$daemonErrorsB64" "$daemonLogsFromEpoch" "$daemonLogsToEpoch"
+# Vitals are emitted as bare JSON numbers, so anything empty/non-numeric must become the literal null.
+jsonNum() { case "$1" in ''|.*|*.|*[!0-9.]*|*.*.*) echo null;; *) echo "$1";; esac; }
+
+cpuStat1=$(grep '^cpu ' /proc/stat 2>/dev/null)
+sleep 0.5 2>/dev/null || sleep 1
+cpuStat2=$(grep '^cpu ' /proc/stat 2>/dev/null)
+vitalsCpuPercent=$(printf '%s\\n%s\\n' "$cpuStat1" "$cpuStat2" | awk 'NF>=5{i=$5+$6; t=0; for(k=2;k<=9&&k<=NF;k++)t+=$k; if(NR==1){i1=i;t1=t;s1=1} if(NR==2){i2=i;t2=t;s2=1}} END{dt=t2-t1; if(s1&&s2&&dt>0){p=(1-(i2-i1)/dt)*100; if(p<0)p=0; if(p>100)p=100; printf "%.1f", p}}')
+vitalsLoadAvg1=$(awk '{print $1}' /proc/loadavg 2>/dev/null)
+vitalsMemTotalBytes=$(awk '/^MemTotal:/{printf "%.0f", $2*1024}' /proc/meminfo 2>/dev/null)
+vitalsMemUsedBytes=$(awk '/^MemTotal:/{t=$2} /^MemAvailable:/{a=$2} END{if(t>0&&a!="")printf "%.0f", (t-a)*1024}' /proc/meminfo 2>/dev/null)
+vitalsDiskTotalBytes=$(df -B1 -P / 2>/dev/null | awk 'NR==2{print $2}')
+vitalsDiskUsedBytes=$(df -B1 -P / 2>/dev/null | awk 'NR==2{print $3}')
+vitalsUptimeSec=$(awk '{printf "%d", $1}' /proc/uptime 2>/dev/null)
+
+printf '{"containerCount":%s,"serviceCount":%s,"memTotalBytes":%s,"memUsedBytes":%s,"cpuCount":%s,"inotifyMaxWatches":%s,"inotifyMaxInstances":%s,"inotifyMaxQueuedEvents":%s,"inotifyCurrentInstances":%s,"inotifyPersistedCount":%s,"diskTotalBytes":%s,"diskUsedBytes":%s,"networkCount":%s,"daemonConfigBase64":"%s","daemonErrorsBase64":"%s","daemonLogsFromEpoch":%s,"daemonLogsToEpoch":%s,"vitalsCpuPercent":%s,"vitalsLoadAvg1":%s,"vitalsMemTotalBytes":%s,"vitalsMemUsedBytes":%s,"vitalsDiskTotalBytes":%s,"vitalsDiskUsedBytes":%s,"vitalsUptimeSec":%s}' "$containerCount" "$serviceCount" "$memTotal" "$memUsed" "$cpuCount" "$inotifyMaxWatches" "$inotifyMaxInstances" "$inotifyMaxQueued" "$inotifyCurrentInstances" "$inotifyPersistedCount" "$diskTotal" "$diskUsed" "$networkCount" "$daemonConfigB64" "$daemonErrorsB64" "$daemonLogsFromEpoch" "$daemonLogsToEpoch" "$(jsonNum "$vitalsCpuPercent")" "$(jsonNum "$vitalsLoadAvg1")" "$(jsonNum "$vitalsMemTotalBytes")" "$(jsonNum "$vitalsMemUsedBytes")" "$(jsonNum "$vitalsDiskTotalBytes")" "$(jsonNum "$vitalsDiskUsedBytes")" "$(jsonNum "$vitalsUptimeSec")"
 `;
 
 const emptyResult = (error: unknown): ServerHealthResult => ({
@@ -144,6 +184,15 @@ const emptyResult = (error: unknown): ServerHealthResult => ({
 	daemonErrors: [],
 	daemonLogsWindow: null,
 	reservation: null,
+	vitals: {
+		cpuPercent: null,
+		loadAvg1: null,
+		memUsedBytes: 0,
+		memTotalBytes: 0,
+		diskUsedBytes: null,
+		diskTotalBytes: null,
+		uptimeSec: null,
+	},
 	error:
 		error instanceof Error ? error.message : "Could not read server health",
 });
@@ -381,5 +430,14 @@ export const getServerHealth = async (
 					}
 				: null,
 		reservation,
+		vitals: {
+			cpuPercent: toNullableNumber(parsed.vitalsCpuPercent),
+			loadAvg1: toNullableNumber(parsed.vitalsLoadAvg1),
+			memUsedBytes: toInt(parsed.vitalsMemUsedBytes),
+			memTotalBytes: toInt(parsed.vitalsMemTotalBytes),
+			diskUsedBytes: toNullableNumber(parsed.vitalsDiskUsedBytes),
+			diskTotalBytes: toNullableNumber(parsed.vitalsDiskTotalBytes),
+			uptimeSec: toNullableNumber(parsed.vitalsUptimeSec),
+		},
 	};
 };
