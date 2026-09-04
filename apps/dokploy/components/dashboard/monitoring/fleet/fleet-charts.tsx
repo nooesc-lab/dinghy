@@ -3,8 +3,6 @@ import {
 	Area,
 	AreaChart,
 	Grid,
-	Line,
-	LineChart,
 	Tooltip,
 	XAxis,
 	YAxis,
@@ -169,7 +167,7 @@ export const FleetCharts = ({
 					delay={0.3}
 					ready={ready}
 				>
-					<LineChart
+					<AreaChart
 						data={memRows}
 						config={chartConfig}
 						bloom="aura"
@@ -191,9 +189,14 @@ export const FleetCharts = ({
 						/>
 						<SelectionBridge selected={selected} focus={focus} />
 						{chartKeys.map((key) => (
-							<Line key={key} dataKey={key} isClickable />
+							<Area
+								key={key}
+								dataKey={key}
+								variant="gradient"
+								isClickable
+							/>
 						))}
-					</LineChart>
+					</AreaChart>
 				</Panel>
 			</div>
 		</section>
