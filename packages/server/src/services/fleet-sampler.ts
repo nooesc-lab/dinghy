@@ -119,10 +119,27 @@ const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
 		);
 	});
 
-const hosts = new Map<string, FleetHostState>();
-const inFlight = new Set<string>();
-let timer: NodeJS.Timeout | null = null;
-let ticking = false;
+interface SamplerStore {
+	hosts: Map<string, FleetHostState>;
+	inFlight: Set<string>;
+	timer: NodeJS.Timeout | null;
+	ticking: boolean;
+}
+
+// Next bundles its own copy of @dokploy/server for API routes (transpilePackages),
+// so plain module state would be duplicated: the sampler fills one Map while the
+// tRPC router reads another. Anchor the store on globalThis to share one instance
+// across every bundle in this process.
+const STORE_KEY = Symbol.for("dinghy.fleet-sampler");
+const store: SamplerStore = ((globalThis as Record<symbol, unknown>)[
+	STORE_KEY
+] ??= {
+	hosts: new Map<string, FleetHostState>(),
+	inFlight: new Set<string>(),
+	timer: null,
+	ticking: false,
+} satisfies SamplerStore) as SamplerStore;
+const { hosts, inFlight } = store;
 
 /** Dedupes registrations by ip:port; the earliest-created one is polled, later ones become aliases. */
 const loadHostMetas = async (): Promise<FleetHostMeta[]> => {
@@ -210,8 +227,8 @@ const pollHost = async (state: FleetHostState) => {
 };
 
 const tick = async () => {
-	if (ticking) return;
-	ticking = true;
+	if (store.ticking) return;
+	store.ticking = true;
 	try {
 		const metas = await loadHostMetas();
 		const seen = new Set<string>();
@@ -240,22 +257,22 @@ const tick = async () => {
 	} catch (error) {
 		console.error("Fleet sampler tick failed", error);
 	} finally {
-		ticking = false;
+		store.ticking = false;
 	}
 };
 
 /** Starts the in-process sampler (idempotent). First tick runs immediately. */
 export const startFleetSampler = () => {
-	if (timer) return;
-	timer = setInterval(() => void tick(), FLEET_POLL_MS);
-	timer.unref?.();
+	if (store.timer) return;
+	store.timer = setInterval(() => void tick(), FLEET_POLL_MS);
+	store.timer.unref?.();
 	void tick();
 };
 
 export const stopFleetSampler = () => {
-	if (!timer) return;
-	clearInterval(timer);
-	timer = null;
+	if (!store.timer) return;
+	clearInterval(store.timer);
+	store.timer = null;
 };
 
 /** Live view of every sampled host keyed by hostKey ("local" or the polled serverId). */
