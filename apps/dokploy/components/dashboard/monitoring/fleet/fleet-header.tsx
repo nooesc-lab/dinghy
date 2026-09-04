@@ -1,4 +1,10 @@
-import { type DitherColor, DitherGradient, Sparkline } from "@/components/dither-kit";
+import { useMemo } from "react";
+import {
+	type DitherColor,
+	DitherGradient,
+	Line,
+	LineChart,
+} from "@/components/dither-kit";
 import { Collecting, Reveal } from "./primitives";
 import { type FleetSummary, MAX_SAMPLES, POLL_MS } from "./use-fleet";
 
@@ -11,6 +17,24 @@ interface TileProps {
 	delay: number;
 }
 
+const Spark = ({ data, color }: { data: number[]; color: DitherColor }) => {
+	const rows = useMemo(() => data.map((v) => ({ v })), [data]);
+	const config = useMemo(() => ({ v: { color } }), [color]);
+	return (
+		<LineChart
+			data={rows}
+			config={config}
+			interactive={false}
+			animate={false}
+			bloom="low"
+			margins={{ top: 4, right: 0, bottom: 2, left: 0 }}
+			className="h-full w-full"
+		>
+			<Line dataKey="v" />
+		</LineChart>
+	);
+};
+
 const Tile = ({ label, value, sub, color, history, delay }: TileProps) => (
 	<Reveal delay={delay} className="flex flex-col bg-card">
 		<div className="flex flex-col gap-1 px-4 pt-4">
@@ -20,11 +44,11 @@ const Tile = ({ label, value, sub, color, history, delay }: TileProps) => (
 			</span>
 			<span className="text-[11px] text-muted-foreground">{sub}</span>
 		</div>
-		<div className="mt-3 h-9 w-full">
+		<div className="mt-3 h-9 w-full px-4 pb-2">
 			{history.length < 2 ? (
 				<Collecting className="h-full" hint="collecting" />
 			) : (
-				<Sparkline data={history} color={color} bloom="low" />
+				<Spark data={history} color={color} />
 			)}
 		</div>
 	</Reveal>
