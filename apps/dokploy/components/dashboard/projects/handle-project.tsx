@@ -170,7 +170,7 @@ export const HandleProject = ({ projectId }: Props) => {
 					</Button>
 				)}
 			</DialogTrigger>
-			<DialogContent className="sm:m:max-w-lg ">
+			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>{projectId ? "Update" : "Add a"} project</DialogTitle>
 					<DialogDescription>The home of something big!</DialogDescription>

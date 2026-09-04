@@ -1,6 +1,5 @@
 import { IS_CLOUD, isAdminPresent, validateRequest } from "@dokploy/server";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { AlertTriangle } from "lucide-react";
 import type { GetServerSidePropsContext } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -15,7 +14,7 @@ import { SignupShowcase } from "@/components/proprietary/auth/signup-showcase";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
-import { CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription } from "@/components/ui/card";
 import {
 	Form,
 	FormControl,
@@ -124,34 +123,42 @@ const Register = ({ isCloud }: Props) => {
 		}
 	};
 	return (
-		<div className="">
-			<div className="flex  w-full items-center justify-center ">
-				<div className="flex flex-col items-center gap-4 w-full">
-					<CardTitle className="text-2xl font-bold flex  items-center gap-2">
-						<Link href="/" className="flex flex-row items-center gap-2">
-							<Logo
-								className="size-12"
-								logoUrl={
-									whitelabeling?.loginLogoUrl ||
-									whitelabeling?.logoUrl ||
-									undefined
-								}
-							/>
-						</Link>
+		<div className="flex flex-col gap-6">
+			<div className="flex flex-col items-center gap-4 text-center">
+				<div className="flex flex-col items-center gap-2">
+					<Link href="/">
+						<Logo
+							className="size-10"
+							logoUrl={
+								whitelabeling?.loginLogoUrl ||
+								whitelabeling?.logoUrl ||
+								undefined
+							}
+						/>
+					</Link>
+					<span className="text-base font-semibold tracking-tight">
+						{whitelabeling?.appName || "Dinghy"}
+					</span>
+					<p className="gh-eyebrow">Little boat. Big ships.</p>
+				</div>
+				<div className="space-y-1">
+					<h1 className="text-lg font-semibold tracking-tight">
 						{isCloud ? "Sign Up" : "Setup the server"}
-					</CardTitle>
+					</h1>
 					<CardDescription>
 						Enter your email and password to{" "}
 						{isCloud ? "create an account" : "setup the server"}
 					</CardDescription>
-					<div className="mx-auto w-full max-w-lg bg-transparent">
+				</div>
+			</div>
+			<div className="w-full">
 						{isError && (
-							<div className="my-2 flex flex-row items-center gap-2 rounded-lg bg-red-50 p-2 dark:bg-red-950">
-								<AlertTriangle className="text-red-600 dark:text-red-400" />
-								<span className="text-sm text-red-600 dark:text-red-400">
-									{error}
-								</span>
-							</div>
+							<AlertBlock
+								type="error"
+								className="my-2 border border-destructive/40 bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive"
+							>
+								<span>{error}</span>
+							</AlertBlock>
 						)}
 						{isCloud && data && (
 							<AlertBlock type="success" className="my-2">
@@ -169,7 +176,7 @@ const Register = ({ isCloud }: Props) => {
 								</div>
 							)}
 							{isCloud && (
-								<p className="mb-4 text-center text-xs text-muted-foreground">
+								<p className="gh-eyebrow my-4 text-center">
 									Or register with email
 								</p>
 							)}
@@ -185,9 +192,11 @@ const Register = ({ isCloud }: Props) => {
 											name="name"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>First Name</FormLabel>
+													<FormLabel className="text-xs text-muted-foreground">
+														First Name
+													</FormLabel>
 													<FormControl>
-														<Input placeholder="John" {...field} />
+														<Input className="h-9" placeholder="John" {...field} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -198,9 +207,11 @@ const Register = ({ isCloud }: Props) => {
 											name="lastName"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>Last Name</FormLabel>
+													<FormLabel className="text-xs text-muted-foreground">
+														Last Name
+													</FormLabel>
 													<FormControl>
-														<Input placeholder="Doe" {...field} />
+														<Input className="h-9" placeholder="Doe" {...field} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -211,9 +222,15 @@ const Register = ({ isCloud }: Props) => {
 											name="email"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>Email</FormLabel>
+													<FormLabel className="text-xs text-muted-foreground">
+														Email
+													</FormLabel>
 													<FormControl>
-														<Input placeholder="email@dokploy.com" {...field} />
+														<Input
+															className="h-9"
+															placeholder="email@dokploy.com"
+															{...field}
+														/>
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -224,9 +241,12 @@ const Register = ({ isCloud }: Props) => {
 											name="password"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>Password</FormLabel>
+													<FormLabel className="text-xs text-muted-foreground">
+														Password
+													</FormLabel>
 													<FormControl>
 														<Input
+															className="h-9"
 															type="password"
 															placeholder="Password"
 															{...field}
@@ -242,9 +262,12 @@ const Register = ({ isCloud }: Props) => {
 											name="confirmPassword"
 											render={({ field }) => (
 												<FormItem>
-													<FormLabel>Confirm Password</FormLabel>
+													<FormLabel className="text-xs text-muted-foreground">
+														Confirm Password
+													</FormLabel>
 													<FormControl>
 														<Input
+															className="h-9"
 															type="password"
 															placeholder="Password"
 															{...field}
@@ -265,20 +288,23 @@ const Register = ({ isCloud }: Props) => {
 									</div>
 								</form>
 							</Form>
-							<div className="flex flex-row justify-between flex-wrap">
+							<div className="mt-6 flex flex-row flex-wrap justify-between gap-2 text-xs text-muted-foreground">
 								{isCloud && (
-									<div className="mt-4 text-center text-sm flex gap-2 text-muted-foreground">
+									<div className="flex gap-1">
 										Already have account?
-										<Link className="underline" href="/">
+										<Link
+											className="transition-colors hover:text-foreground"
+											href="/"
+										>
 											Sign in
 										</Link>
 									</div>
 								)}
 
-								<div className="mt-4 text-center text-sm flex flex-row justify-center gap-2  text-muted-foreground">
+								<div className="flex gap-1">
 									Need help?
 									<Link
-										className="underline"
+										className="transition-colors hover:text-foreground"
 										href="https://dokploy.com"
 										target="_blank"
 									>
@@ -287,8 +313,6 @@ const Register = ({ isCloud }: Props) => {
 								</div>
 							</div>
 						</CardContent>
-					</div>
-				</div>
 			</div>
 		</div>
 	);

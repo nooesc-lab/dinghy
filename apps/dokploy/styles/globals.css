@@ -532,93 +532,187 @@ body[data-scroll-locked] [data-slot="sidebar-inset"] {
 	--color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* ===== dinghy: railway-calm theme ===== */
+/* ===== dinghy: grep-hound theme ===== */
 /*
   Appended, self-contained override block. Everything below is intentionally
   unlayered so it wins over Tailwind's layered utilities without touching TSX.
   Order matters: this must stay AFTER the OKLCH :root/.dark token blocks above.
 
-  Direction: dark-first, near-black surfaces, hairline borders, no drop
-  shadows, ~0.5rem radius, muted text hierarchy, restrained blue accent.
+  Direction: dark-first, green-tinted near-black surfaces, one green accent,
+  hairline borders, sharp small radii, quiet type with uppercase micro-labels.
 */
 
 /* -- tokens ------------------------------------------------------------- */
 :root {
-	--radius: 0.5rem;
-	--background: oklch(0.99 0 0);
-	--card: oklch(1 0 0);
-	--popover: oklch(1 0 0);
-	--primary: oklch(0.5 0.16 258);
-	--primary-foreground: oklch(0.985 0 0);
-	--muted: oklch(0.965 0 0);
-	--muted-foreground: oklch(0.5 0 0);
-	--accent: oklch(0.955 0 0);
-	--border: oklch(0.91 0 0);
-	--input: oklch(0.89 0 0);
-	--ring: oklch(0.55 0.14 258);
-	--sidebar: oklch(0.985 0 0);
-	--sidebar-foreground: oklch(0.42 0 0);
-	--sidebar-accent: oklch(0.94 0 0);
-	--sidebar-accent-foreground: oklch(0.145 0 0);
-	--sidebar-border: oklch(0.91 0 0);
+	--radius: 0.3rem;
+	--background: #ffffff;
+	--foreground: #14171a;
+	--card: #ffffff;
+	--card-foreground: #14171a;
+	--popover: #ffffff;
+	--popover-foreground: #14171a;
+	--primary: #059669;
+	--primary-foreground: #ffffff;
+	--secondary: #f1f3f2;
+	--secondary-foreground: #14171a;
+	--muted: #f1f3f2;
+	--muted-foreground: #667069;
+	--accent: #e9ece9;
+	--accent-foreground: #14171a;
+	--destructive: #dc2626;
+	--destructive-foreground: #ffffff;
+	--border: rgb(0 0 0 / 9%);
+	--input: rgb(0 0 0 / 14%);
+	--ring: #059669;
+	--sidebar: #f7f8f7;
+	--sidebar-foreground: #4d5651;
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: rgb(0 0 0 / 5%);
+	--sidebar-accent-foreground: #14171a;
+	--sidebar-border: rgb(0 0 0 / 9%);
 	--sidebar-ring: var(--ring);
 	--overlay: rgba(0, 0, 0, 0.35);
+	--terminal-paste: rgba(0, 0, 0, 0.2);
 }
 
 .dark {
-	--background: oklch(0.145 0 0);
-	--foreground: oklch(0.95 0 0);
-	--card: oklch(0.175 0 0);
-	--card-foreground: oklch(0.95 0 0);
-	--popover: oklch(0.19 0 0);
-	--popover-foreground: oklch(0.95 0 0);
-	--primary: oklch(0.64 0.15 258);
-	--primary-foreground: oklch(0.985 0 0);
-	--secondary: oklch(0.23 0 0);
-	--secondary-foreground: oklch(0.95 0 0);
-	--muted: oklch(0.22 0 0);
-	--muted-foreground: oklch(0.66 0 0);
-	--accent: oklch(0.23 0 0);
-	--accent-foreground: oklch(0.95 0 0);
-	--border: oklch(1 0 0 / 8%);
-	--input: oklch(1 0 0 / 10%);
-	--ring: oklch(0.6 0.13 258);
-	--sidebar: oklch(0.145 0 0);
-	--sidebar-foreground: oklch(0.68 0 0);
+	--background: #111311;
+	--foreground: #f2f4f2;
+	--card: #181a18;
+	--card-foreground: #f2f4f2;
+	--popover: #1b1d1b;
+	--popover-foreground: #f2f4f2;
+	--primary: #38e29f;
+	--primary-foreground: #062016;
+	--secondary: #242724;
+	--secondary-foreground: #f2f4f2;
+	--muted: #242724;
+	--muted-foreground: #909790;
+	--accent: #282b28;
+	--accent-foreground: #f2f4f2;
+	--destructive: #ff6b73;
+	--destructive-foreground: #f2f4f2;
+	--border: rgb(255 255 255 / 9%);
+	--input: rgb(255 255 255 / 14%);
+	--ring: #38e29f;
+	--sidebar: #141614;
+	--sidebar-foreground: #909790;
 	--sidebar-primary: var(--primary);
 	--sidebar-primary-foreground: var(--primary-foreground);
-	--sidebar-accent: oklch(1 0 0 / 6%);
-	--sidebar-accent-foreground: oklch(0.97 0 0);
-	--sidebar-border: oklch(1 0 0 / 7%);
+	--sidebar-accent: rgb(255 255 255 / 6%);
+	--sidebar-accent-foreground: #f2f4f2;
+	--sidebar-border: rgb(255 255 255 / 9%);
 	--sidebar-ring: var(--ring);
 	--overlay: rgba(0, 0, 0, 0.6);
+	--terminal-paste: rgba(255, 255, 255, 0.2);
 }
 
-/* Tighter radius scale: rounded-xl (cards, dialogs) lands at ~10px. */
+html {
+	color-scheme: light;
+}
+html.dark {
+	color-scheme: dark;
+}
+
+/* Sharp scale: rounded-xl (cards, dialogs) lands at 6px, 2xl at ~7px. */
 @theme inline {
 	--radius-xl: calc(var(--radius) * 1.25);
 	--radius-2xl: calc(var(--radius) * 1.5);
 	--radius-3xl: calc(var(--radius) * 2);
 }
 
-/* -- surfaces ----------------------------------------------------------- */
-/* Cards: hairline ring in the border color, never a drop shadow. */
-[data-slot="card"] {
-	--tw-ring-color: var(--border);
-	--tw-shadow: 0 0 #0000;
+/* -- utilities ---------------------------------------------------------- */
+.gh-surface {
+	background: var(--card);
+	border: 1px solid var(--border);
+	box-shadow:
+		0 1px 0 rgb(255 255 255 / 2%) inset,
+		0 16px 40px rgb(0 0 0 / 8%);
+}
+.gh-eyebrow {
+	font-size: 10px;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+.gh-interactive {
+	transition-property: background-color, border-color, color, box-shadow, opacity;
+	transition-duration: 150ms;
+	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gh-interactive:hover {
+	background-color: var(--accent);
+	border-color: color-mix(in srgb, var(--foreground) 14%, transparent);
+}
+.gh-interactive:active {
+	background-color: var(--muted);
+}
+.gh-interactive:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
-/* Overlays keep a hairline; drop the heavy shadows. */
+::selection {
+	background-color: color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+/* -- surfaces ----------------------------------------------------------- */
+/*
+  Cards get the .gh-surface treatment through the ring/shadow vars the stock
+  `ring-1` utility already composes into box-shadow, so no layout shift from
+  a real border and caller `border`/`ring` classes stay additive.
+*/
+[data-slot="card"] {
+	background-color: var(--card);
+	--tw-ring-color: var(--border);
+	--tw-shadow:
+		0 1px 0 rgb(255 255 255 / 2%) inset,
+		0 16px 40px rgb(0 0 0 / 8%);
+}
+
+/* Overlays: 1px --border hairline on popover bg, one soft shadow. */
 [data-slot="dialog-content"],
 [data-slot="popover-content"],
 [data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-sub-content"],
 [data-slot="select-content"],
 [data-slot="command"] {
+	background-color: var(--popover);
+	border-color: var(--border);
 	--tw-ring-color: var(--border);
-	--tw-shadow: 0 0 #0000;
+	--tw-shadow:
+		0 1px 0 rgb(255 255 255 / 3%) inset,
+		0 16px 40px rgb(0 0 0 / 24%);
 }
-.dark [data-slot="sheet-content"] {
-	--tw-shadow: 0 0 #0000;
+[data-slot="sheet-content"] {
+	border-color: var(--border);
+	box-shadow: 0 16px 40px rgb(0 0 0 / 24%);
+}
+[data-slot="tooltip-content"] {
+	border-radius: var(--radius-md);
+}
+
+/* Toasts (sonner) match cards. */
+.toaster [data-sonner-toast],
+.toaster .cn-toast {
+	background: var(--card) !important;
+	color: var(--card-foreground) !important;
+	border: 1px solid var(--border) !important;
+	border-radius: var(--radius-lg) !important;
+	box-shadow:
+		0 1px 0 rgb(255 255 255 / 2%) inset,
+		0 16px 40px rgb(0 0 0 / 24%) !important;
+}
+.toaster [data-sonner-toast] [data-icon] {
+	color: var(--primary);
+}
+.toaster [data-sonner-toast][data-type="error"] [data-icon] {
+	color: var(--destructive);
+}
+.toaster [data-sonner-toast] [data-description] {
+	color: var(--muted-foreground);
 }
 
 /* -- sidebar ------------------------------------------------------------ */
@@ -636,16 +730,16 @@ body[data-scroll-locked] [data-slot="sidebar-inset"] {
 	border-inline-end: 1px solid var(--sidebar-border);
 }
 [data-slot="sidebar-group-label"] {
-	font-size: 0.6875rem;
+	font-size: 10px;
 	font-weight: 500;
-	letter-spacing: 0.06em;
+	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--muted-foreground);
 }
 [data-slot="sidebar-menu-button"],
 [data-slot="sidebar-menu-sub-button"] {
 	transition-property: background-color, color, width, height, padding;
-	transition-duration: 120ms;
+	transition-duration: 150ms;
 }
 [data-slot="sidebar-menu-button"][data-active="true"],
 [data-slot="sidebar-menu-sub-button"][data-active="true"] {
@@ -660,7 +754,7 @@ body[data-scroll-locked] [data-slot="sidebar-inset"] {
 }
 
 /* -- tabs --------------------------------------------------------------- */
-/* Default tab lists become an understated underline row. */
+/* Default tab lists become an understated underline row; active = accent. */
 [data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] {
 	height: auto;
 	padding: 0;
@@ -677,18 +771,19 @@ body[data-scroll-locked] [data-slot="sidebar-inset"] {
 	background: transparent;
 	box-shadow: none;
 	color: var(--muted-foreground);
+	transition: color 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 [data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"]:hover {
 	color: var(--foreground);
 }
 [data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"][data-state="active"] {
-	color: var(--foreground);
+	color: var(--primary);
 }
 [data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"]::after {
 	inset-inline: 0;
 	bottom: -1px;
-	height: 1px;
-	background-color: var(--foreground);
+	height: 2px;
+	background-color: var(--primary);
 }
 [data-slot="tabs"][data-orientation="horizontal"] [data-slot="tabs-list"][data-variant="default"] > [data-slot="tabs-trigger"][data-state="active"]::after {
 	opacity: 1;
@@ -698,11 +793,33 @@ body[data-scroll-locked] [data-slot="sidebar-inset"] {
 	gap: 1rem;
 }
 
+/* -- tables ------------------------------------------------------------- */
+[data-slot="table-head"] {
+	height: 2.5rem;
+	font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+	font-size: 10px;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted-foreground);
+}
+
+/* -- badges ------------------------------------------------------------- */
+/* Status greens collapse onto the single accent. */
+[data-slot="badge"][data-variant="green"] {
+	background-color: color-mix(in srgb, var(--primary) 14%, transparent);
+	color: var(--primary);
+}
+[data-slot="badge"][data-variant="red"] {
+	background-color: color-mix(in srgb, var(--destructive) 14%, transparent);
+	color: var(--destructive);
+}
+
 /* -- controls ----------------------------------------------------------- */
 /*
-  Tighter default control heights/radius. Matched on the component's stock
-  size class (`h-10`, `rounded-lg`, …): `cn()` runs tailwind-merge, so a caller
-  that passes its own `h-8` / `rounded-full` drops the stock token and opts out.
+  Tighter default control heights. Matched on the component's stock size class
+  (`h-10`, …): `cn()` runs tailwind-merge, so a caller that passes its own
+  `h-8` drops the stock token and opts out.
 */
 [data-slot="button"][data-size="default"][class~="h-10"],
 [data-slot="input"][class~="h-10"],
@@ -721,21 +838,29 @@ body[data-scroll-locked] [data-slot="sidebar-inset"] {
 	height: 2rem;
 	width: 2rem;
 }
-[data-slot="button"][class~="rounded-lg"],
-[data-slot="input"][class~="rounded-lg"],
-[data-slot="textarea"][class~="rounded-lg"],
-[data-slot="select-trigger"][class~="rounded-lg"] {
-	border-radius: var(--radius-md);
+/* 150ms motion on interactive primitives. */
+[data-slot="button"],
+[data-slot="badge"],
+[data-slot="dropdown-menu-item"],
+[data-slot="dropdown-menu-checkbox-item"],
+[data-slot="dropdown-menu-radio-item"],
+[data-slot="dropdown-menu-sub-trigger"],
+[data-slot="select-item"],
+[data-slot="command-item"] {
+	transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+	transition-duration: 150ms;
+	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* Softer focus ring: 2px, low-alpha accent. */
+/* Focus ring: 2px, 40% accent. */
 [data-slot="button"]:focus-visible,
 [data-slot="input"]:focus-visible,
 [data-slot="textarea"]:focus-visible,
 [data-slot="select-trigger"]:focus-visible,
 [data-slot="checkbox"]:focus-visible,
 [data-slot="switch"]:focus-visible,
-[data-slot="tabs-trigger"]:focus-visible {
-	--tw-ring-shadow: 0 0 0 2px color-mix(in oklch, var(--ring) 45%, transparent);
+[data-slot="tabs-trigger"]:focus-visible,
+[data-slot="badge"]:focus-visible {
+	--tw-ring-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 40%, transparent);
 	outline: none;
 }
 /* Primary buttons: flat, no translucent border, quiet hover. */
@@ -743,22 +868,28 @@ body[data-scroll-locked] [data-slot="sidebar-inset"] {
 	border-color: transparent;
 }
 [data-slot="button"][data-variant="default"]:hover {
-	background-color: color-mix(in oklch, var(--primary) 88%, var(--background));
+	background-color: color-mix(in srgb, var(--primary) 88%, var(--background));
 }
 
 /* -- scrollbars --------------------------------------------------------- */
 ::-webkit-scrollbar {
-	width: 0.375rem;
-	height: 0.375rem;
+	width: 10px;
+	height: 10px;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-	background: color-mix(in oklch, var(--muted-foreground) 25%, transparent);
+	background: var(--muted);
+	background-clip: padding-box;
+	border: 2px solid var(--background);
 	border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-	background: color-mix(in oklch, var(--muted-foreground) 45%, transparent);
+	background: var(--accent);
 }
 * {
-	scrollbar-color: color-mix(in oklch, var(--muted-foreground) 25%, transparent) transparent;
+	scrollbar-width: thin;
+	scrollbar-color: var(--muted) transparent;
 }
-/* ===== /dinghy: railway-calm theme ===== */
+/* ===== /dinghy: grep-hound theme ===== */

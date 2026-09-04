@@ -204,8 +204,8 @@ export const ShowProjects = () => {
 				list={[{ name: "Projects", href: "/dashboard/projects" }]}
 			/>
 			<div className="w-full">
-				<Card className="h-full bg-sidebar p-2.5 rounded-xl  ">
-					<div className="rounded-xl bg-background shadow-md ">
+				<Card className="h-full bg-sidebar p-2.5 rounded-lg ring-0 border border-border">
+					<div className="rounded-md bg-background border border-border">
 						<div className="flex justify-between gap-4 w-full items-center flex-wrap p-6">
 							<CardHeader className="flex-1 p-0">
 								<CardTitle className="text-xl flex flex-row gap-2">
@@ -283,11 +283,25 @@ export const ShowProjects = () => {
 										</div>
 									</div>
 									{filteredProjects?.length === 0 && (
-										<div className="mt-6 flex h-[50vh] w-full flex-col items-center justify-center space-y-4">
-											<FolderInput className="size-8 self-center text-muted-foreground" />
-											<span className="text-center font-medium text-muted-foreground">
-												No projects found
-											</span>
+										<div className="mt-6 flex h-[50vh] w-full flex-col items-center justify-center gap-4">
+											<div className="rounded-xl bg-muted p-3">
+												<FolderInput className="size-6 text-muted-foreground" />
+											</div>
+											<div className="flex flex-col items-center gap-1.5">
+												<span className="text-[15px] font-medium">
+													{data?.length === 0
+														? "No projects yet"
+														: "No projects found"}
+												</span>
+												<span className="gh-eyebrow text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+													{data?.length === 0
+														? "Create your first project to get started"
+														: "Try adjusting your search or filters"}
+												</span>
+											</div>
+											{data?.length === 0 && permissions?.project.create && (
+												<HandleProject />
+											)}
 										</div>
 									)}
 									<div className="w-full grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-5">
@@ -344,18 +358,18 @@ export const ShowProjects = () => {
 															}
 														}}
 													>
-														<Card className="group relative w-full h-full bg-transparent transition-colors hover:bg-border flex flex-col">
+														<Card className="gh-surface gh-interactive group relative flex h-full w-full flex-col rounded-lg border border-border ring-0 transition-colors hover:border-primary/30">
 															<CardHeader>
 																<CardTitle className="flex items-center justify-between gap-2 overflow-clip">
 																	<span className="flex flex-col gap-1.5 ">
 																		<div className="flex items-center gap-2">
 																			<BookIcon className="size-4 text-muted-foreground" />
-																			<span className="text-base font-medium leading-none">
+																			<span className="text-[15px] font-medium leading-none">
 																				{project.name}
 																			</span>
 																		</div>
 
-																		<span className="text-sm font-medium text-muted-foreground break-normal">
+																		<span className="text-sm text-muted-foreground break-normal">
 																			{project.description}
 																		</span>
 
@@ -373,7 +387,7 @@ export const ShowProjects = () => {
 																			)}
 
 																		{hasNoEnvironments && (
-																			<div className="flex flex-row gap-2 items-center rounded-lg bg-yellow-50 p-2 mt-2 dark:bg-yellow-950">
+																			<div className="flex flex-row gap-2 items-center rounded-md border border-yellow-500/30 bg-yellow-500/10 p-2 mt-2">
 																				<AlertTriangle className="size-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
 																				<span className="text-xs text-yellow-600 dark:text-yellow-400">
 																					You have access to this project but no
@@ -492,10 +506,14 @@ export const ShowProjects = () => {
 																</CardTitle>
 															</CardHeader>
 															<CardFooter className="pt-4 mt-auto">
-																<div className="space-y-1 text-xs flex flex-row justify-between max-sm:flex-wrap w-full gap-2 sm:gap-4">
-																	<DateTooltip date={project.createdAt}>
+																<div className="gh-eyebrow flex w-full flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+																	<DateTooltip
+																		date={project.createdAt}
+																		className="text-inherit"
+																	>
 																		Created
 																	</DateTooltip>
+																	<span aria-hidden="true">·</span>
 																	<span>
 																		{totalServices}{" "}
 																		{totalServices === 1

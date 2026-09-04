@@ -31,36 +31,36 @@ export const UserNav = () => {
 			<DropdownMenuTrigger asChild>
 				<SidebarMenuButton
 					size="lg"
-					className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+					className="gh-interactive data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 				>
-					<Avatar className="h-8 w-8 rounded-lg">
+					<Avatar className="h-8 w-8 rounded-md ring-1 ring-border">
 						<AvatarImage
 							className="object-cover"
 							src={data?.user?.image || ""}
 							alt={data?.user?.image || ""}
 						/>
-						<AvatarFallback className="rounded-lg">
+						<AvatarFallback className="rounded-md bg-muted text-xs text-muted-foreground">
 							{getFallbackAvatarInitials(
 								`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
 							)}
 						</AvatarFallback>
 					</Avatar>
 					<div className="grid flex-1 text-left text-sm leading-tight">
-						<span className="truncate font-semibold">Account</span>
-						<span className="truncate text-xs">{data?.user?.email}</span>
+						<span className="truncate font-medium">Account</span>
+						<span className="truncate text-xs text-muted-foreground">{data?.user?.email}</span>
 					</div>
-					<ChevronsUpDown className="ml-auto size-4" />
+					<ChevronsUpDown className="ml-auto size-4 text-muted-foreground" />
 				</SidebarMenuButton>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
-				className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+				className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-md border-border/60"
 				side="bottom"
 				align="end"
 				sideOffset={4}
 			>
 				<div className="flex items-center justify-between px-2 py-1.5">
-					<DropdownMenuLabel className="flex flex-col">
-						My Account
+					<DropdownMenuLabel className="flex flex-col gap-0.5">
+						<span className="gh-eyebrow">My Account</span>
 						<span className="text-xs font-normal text-muted-foreground">
 							{data?.user?.email}
 						</span>

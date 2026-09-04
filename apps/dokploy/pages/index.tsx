@@ -250,9 +250,15 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 						name="email"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Email</FormLabel>
+								<FormLabel className="text-xs text-muted-foreground">
+									Email
+								</FormLabel>
 								<FormControl>
-									<Input placeholder="john@example.com" {...field} />
+									<Input
+										className="h-9"
+										placeholder="john@example.com"
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -263,9 +269,12 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 						name="password"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Password</FormLabel>
+								<FormLabel className="text-xs text-muted-foreground">
+									Password
+								</FormLabel>
 								<FormControl>
 									<Input
+										className="h-9"
 										type="password"
 										placeholder="Enter your password"
 										{...field}
@@ -282,7 +291,7 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 			</Form>
 			<Button
 				variant="outline"
-				className="w-full mt-4"
+				className="gh-interactive mt-4 w-full"
 				type="button"
 				onClick={onPasskeySignIn}
 				isLoading={isPasskeyLoading}
@@ -295,26 +304,33 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 
 	return (
 		<>
-			<div className="flex flex-col space-y-2 text-center">
-				<h1 className="text-2xl font-semibold tracking-tight">
-					<div className="flex flex-row items-center justify-center gap-2">
-						<Logo
-							className="size-12"
-							logoUrl={
-								whitelabeling?.loginLogoUrl ||
-								whitelabeling?.logoUrl ||
-								undefined
-							}
-						/>
-						Sign in
-					</div>
-				</h1>
-				<p className="text-sm text-muted-foreground">
-					Enter your email and password to sign in
-				</p>
+			<div className="flex flex-col items-center gap-4 text-center">
+				<div className="flex flex-col items-center gap-2">
+					<Logo
+						className="size-10"
+						logoUrl={
+							whitelabeling?.loginLogoUrl ||
+							whitelabeling?.logoUrl ||
+							undefined
+						}
+					/>
+					<span className="text-base font-semibold tracking-tight">
+						{whitelabeling?.appName || "Dinghy"}
+					</span>
+					<p className="gh-eyebrow">Little boat. Big ships.</p>
+				</div>
+				<div className="space-y-1">
+					<h1 className="text-lg font-semibold tracking-tight">Sign in</h1>
+					<p className="text-sm text-muted-foreground">
+						Enter your email and password to sign in
+					</p>
+				</div>
 			</div>
 			{error && (
-				<AlertBlock type="error" className="my-2">
+				<AlertBlock
+					type="error"
+					className="my-2 border border-destructive/40 bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive"
+				>
 					<span>{error}</span>
 				</AlertBlock>
 			)}
@@ -339,7 +355,12 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 							autoComplete="on"
 						>
 							<div className="flex flex-col gap-2">
-								<Label htmlFor="totp-code">2FA Code</Label>
+								<Label
+									htmlFor="totp-code"
+									className="text-xs text-muted-foreground"
+								>
+									2FA Code
+								</Label>
 								<InputOTP
 									id="totp-code"
 									name="totp"
@@ -452,11 +473,11 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 					</>
 				)}
 
-				<div className="flex flex-row justify-between flex-wrap">
-					<div className="mt-4 text-center text-sm flex flex-row justify-center gap-2">
+				<div className="mt-6 flex flex-row flex-wrap justify-between gap-2 text-xs">
+					<div className="flex flex-row gap-2">
 						{IS_CLOUD && (
 							<Link
-								className="hover:underline text-muted-foreground"
+								className="text-muted-foreground transition-colors hover:text-foreground"
 								href="/register"
 							>
 								Create an account
@@ -464,17 +485,17 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 						)}
 					</div>
 
-					<div className="mt-4 text-sm flex flex-row justify-center gap-2">
+					<div className="flex flex-row gap-2">
 						{IS_CLOUD ? (
 							<Link
-								className="hover:underline text-muted-foreground"
+								className="text-muted-foreground transition-colors hover:text-foreground"
 								href="/send-reset-password"
 							>
 								Lost your password?
 							</Link>
 						) : (
 							<Link
-								className="hover:underline text-muted-foreground"
+								className="text-muted-foreground transition-colors hover:text-foreground"
 								href="https://docs.dokploy.com/docs/core/reset-password"
 								target="_blank"
 							>
@@ -483,7 +504,6 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 						)}
 					</div>
 				</div>
-				<div className="p-2" />
 			</CardContent>
 		</>
 	);

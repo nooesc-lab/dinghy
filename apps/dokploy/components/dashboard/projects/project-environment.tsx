@@ -160,17 +160,12 @@ export const ProjectEnvironment = ({ projectId, children }: Props) => {
 													language="properties"
 													readOnly={!canWrite}
 													wrapperClassName="h-140 font-mono"
-													placeholder={`NODE_ENV=production
-PORT=3000
-
-                                                    `}
+													placeholder={"NODE_ENV=production\nPORT=3000"}
 													{...field}
 												/>
 											</FormControl>
 
-											<pre>
-												<FormMessage />
-											</pre>
+											<FormMessage />
 										</FormItem>
 									)}
 								/>

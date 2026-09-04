@@ -132,6 +132,13 @@ export type Services = {
 	icon?: string | null;
 };
 
+const serviceStatusDot: Record<NonNullable<Services["status"]>, string> = {
+	done: "bg-primary shadow-[0_0_8px] shadow-primary/40",
+	running: "bg-primary shadow-[0_0_8px] shadow-primary/40 animate-pulse",
+	error: "bg-destructive",
+	idle: "bg-muted-foreground dark:bg-muted-foreground",
+};
+
 type Environment = Awaited<ReturnType<typeof findEnvironmentById>>;
 
 export const extractServicesFromEnvironment = (
@@ -1034,8 +1041,8 @@ const EnvironmentPage = (
 				</title>
 			</Head>
 			<div className="w-full">
-				<Card className="h-full bg-sidebar p-2.5 rounded-xl">
-					<div className="rounded-xl bg-background shadow-md">
+				<Card className="h-full bg-sidebar p-2.5 rounded-lg ring-0 border border-border">
+					<div className="rounded-md bg-background border border-border">
 						<div className="flex justify-between gap-4 w-full items-center flex-wrap p-6">
 							<CardHeader className="p-0">
 								<CardTitle className="text-xl flex flex-row gap-2 items-center">
@@ -1604,21 +1611,32 @@ const EnvironmentPage = (
 
 								<div className="flex w-full gap-8">
 									{emptyServices ? (
-										<div className="flex h-[70vh] w-full flex-col items-center justify-center">
-											<FolderInput className="size-8 self-center text-muted-foreground" />
-											<span className="text-center font-medium text-muted-foreground">
-												No services added yet. Click on Create Service.
-											</span>
+										<div className="flex h-[70vh] w-full flex-col items-center justify-center gap-4">
+											<div className="rounded-xl bg-muted p-3">
+												<FolderInput className="size-6 text-muted-foreground" />
+											</div>
+											<div className="flex flex-col items-center gap-1.5">
+												<span className="text-[15px] font-medium">
+													No services yet
+												</span>
+												<span className="gh-eyebrow text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+													Click Create Service to add one
+												</span>
+											</div>
 										</div>
 									) : filteredServices.length === 0 ? (
-										<div className="flex h-[70vh] w-full flex-col items-center justify-center">
-											<Search className="size-8 self-center text-muted-foreground" />
-											<span className="text-center font-medium text-muted-foreground">
-												No services found with the current filters
-											</span>
-											<span className="text-sm text-muted-foreground">
-												Try adjusting your search or filters
-											</span>
+										<div className="flex h-[70vh] w-full flex-col items-center justify-center gap-4">
+											<div className="rounded-xl bg-muted p-3">
+												<Search className="size-6 text-muted-foreground" />
+											</div>
+											<div className="flex flex-col items-center gap-1.5">
+												<span className="text-[15px] font-medium">
+													No services found
+												</span>
+												<span className="gh-eyebrow text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+													Try adjusting your search or filters
+												</span>
+											</div>
 										</div>
 									) : (
 										<div className="flex w-full flex-col gap-4">
@@ -1630,14 +1648,21 @@ const EnvironmentPage = (
 																href={`/dashboard/project/${projectId}/environment/${environmentId}/services/${service.type}/${service.id}`}
 																className="block h-full"
 															>
-																<Card className="flex flex-col h-full group relative cursor-pointer bg-transparent transition-colors hover:bg-border">
+																<Card className="gh-surface gh-interactive group relative flex h-full cursor-pointer flex-col rounded-lg border border-border ring-0 transition-colors hover:border-primary/30">
 																	{service.serverId && (
 																		<div className="absolute -left-1 -top-2">
 																			<ServerIcon className="size-4 text-muted-foreground" />
 																		</div>
 																	)}
-																	<div className="absolute -right-1 -top-2">
-																		<StatusTooltip status={service.status} />
+																	<div className="absolute right-3 top-3">
+																		<StatusTooltip
+																			status={service.status}
+																			className={cn(
+																				"size-2",
+																				service.status &&
+																					serviceStatusDot[service.status],
+																			)}
+																		/>
 																	</div>
 
 																	<div
@@ -1663,33 +1688,22 @@ const EnvironmentPage = (
 
 																	<CardHeader>
 																		<CardTitle className="flex items-center justify-between">
-																			<div className="flex flex-row items-center gap-2 justify-between w-full">
-																				<div className="flex flex-col gap-2">
-																					<span className="text-base flex items-center gap-2 font-medium leading-none flex-wrap">
-																						{service.name}
-																					</span>
-																					{service.description && (
-																						<span className="text-sm font-medium text-muted-foreground">
-																							{service.description}
-																						</span>
-																					)}
-																				</div>
-
-																				<span className="text-sm font-medium text-muted-foreground self-start">
+																			<div className="flex flex-row items-start gap-3 w-full">
+																				<span className="grid size-9 shrink-0 place-items-center rounded-md bg-muted text-muted-foreground">
 																					{service.type === "postgres" && (
-																						<PostgresqlIcon className="h-7 w-7" />
+																						<PostgresqlIcon className="size-5" />
 																					)}
 																					{service.type === "redis" && (
-																						<RedisIcon className="h-7 w-7" />
+																						<RedisIcon className="size-5" />
 																					)}
 																					{service.type === "mariadb" && (
-																						<MariadbIcon className="h-7 w-7" />
+																						<MariadbIcon className="size-5" />
 																					)}
 																					{service.type === "mongo" && (
-																						<MongodbIcon className="h-7 w-7" />
+																						<MongodbIcon className="size-5" />
 																					)}
 																					{service.type === "mysql" && (
-																						<MysqlIcon className="h-7 w-7" />
+																						<MysqlIcon className="size-5" />
 																					)}
 																					{service.type === "application" &&
 																						(service.icon ? (
@@ -1697,10 +1711,10 @@ const EnvironmentPage = (
 																							<img
 																								src={service.icon}
 																								alt={service.name}
-																								className="size-7 object-contain"
+																								className="size-5 object-contain"
 																							/>
 																						) : (
-																							<GlobeIcon className="h-6 w-6" />
+																							<GlobeIcon className="size-4" />
 																						))}
 																					{service.type === "compose" &&
 																						(service.icon ? (
@@ -1708,31 +1722,47 @@ const EnvironmentPage = (
 																							<img
 																								src={service.icon}
 																								alt={service.name}
-																								className="size-7 object-contain rounded-sm"
+																								className="size-5 object-contain rounded-sm"
 																							/>
 																						) : (
-																							<CircuitBoard className="h-6 w-6" />
+																							<CircuitBoard className="size-4" />
 																						))}
 																					{service.type === "libsql" && (
-																						<LibsqlIcon className="h-6 w-6" />
+																						<LibsqlIcon className="size-4" />
 																					)}
 																				</span>
+																				<div className="flex min-w-0 flex-col gap-1.5 pr-4">
+																					<span className="text-[15px] font-medium leading-none truncate">
+																						{service.name}
+																					</span>
+																					{service.description && (
+																						<span className="text-sm text-muted-foreground line-clamp-2">
+																							{service.description}
+																						</span>
+																					)}
+																				</div>
 																			</div>
 																		</CardTitle>
 																	</CardHeader>
 																	<CardFooter className="mt-auto">
-																		<div className="space-y-1 text-sm w-full">
-																			{service.serverName && (
-																				<div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
-																					<ServerIcon className="size-3" />
-																					<span className="truncate">
-																						{service.serverName}
-																					</span>
-																				</div>
-																			)}
-																			<DateTooltip date={service.createdAt}>
+																		<div className="gh-eyebrow flex w-full flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+																			<DateTooltip
+																				date={service.createdAt}
+																				className="text-inherit"
+																			>
 																				Created
 																			</DateTooltip>
+																			{service.serverName && (
+																				<>
+																					<span aria-hidden="true">·</span>
+																					<span className="flex min-w-0 items-center gap-1">
+																						<ServerIcon className="size-3 shrink-0" />
+																						<span className="truncate">
+																							{service.serverName}
+																						</span>
+																					</span>
+																				</>
+																			)}
 																		</div>
 																	</CardFooter>
 																</Card>

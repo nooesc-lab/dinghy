@@ -35,6 +35,9 @@ interface Props {
 	applicationId: string;
 }
 
+const providerTabClassName =
+	"h-7 flex-none gap-2 rounded-md px-3 text-muted-foreground after:hidden hover:text-foreground group-data-[variant=line]/tabs-list:data-active:bg-muted dark:group-data-[variant=line]/tabs-list:data-active:bg-muted";
+
 export const ShowProviderForm = ({ applicationId }: Props) => {
 	const { data: githubProviders, isPending: isLoadingGithub } =
 		api.github.githubProviders.useQuery();
@@ -72,17 +75,18 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 
 	if (isLoading) {
 		return (
-			<Card className="group relative w-full bg-transparent">
+			<Card className="gh-surface group relative w-full">
 				<CardHeader>
 					<CardTitle className="flex items-start justify-between">
-						<div className="flex flex-col gap-2">
-							<span className="flex flex-col space-y-0.5">Provider</span>
+						<div className="flex flex-col gap-1">
+							<span className="gh-eyebrow">Source</span>
+							<span className="text-sm font-medium">Provider</span>
 							<p className="flex items-center text-sm font-normal text-muted-foreground">
 								Select the source of your code
 							</p>
 						</div>
 						<div className="hidden space-y-1 text-sm font-normal md:block">
-							<GitBranch className="size-6 text-muted-foreground" />
+							<GitBranch className="size-5 text-muted-foreground" />
 						</div>
 					</CardTitle>
 				</CardHeader>
@@ -106,17 +110,18 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 		application.sourceType !== "drop"
 	) {
 		return (
-			<Card className="group relative w-full bg-transparent">
+			<Card className="gh-surface group relative w-full">
 				<CardHeader>
 					<CardTitle className="flex items-start justify-between">
-						<div className="flex flex-col gap-2">
-							<span className="flex flex-col space-y-0.5">Provider</span>
+						<div className="flex flex-col gap-1">
+							<span className="gh-eyebrow">Source</span>
+							<span className="text-sm font-medium">Provider</span>
 							<p className="flex items-center text-sm font-normal text-muted-foreground">
 								Repository connection through unauthorized provider
 							</p>
 						</div>
 						<div className="hidden space-y-1 text-sm font-normal md:block">
-							<GitBranch className="size-6 text-muted-foreground" />
+							<GitBranch className="size-5 text-muted-foreground" />
 						</div>
 					</CardTitle>
 				</CardHeader>
@@ -131,17 +136,18 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 	}
 
 	return (
-		<Card className="group relative w-full bg-transparent">
+		<Card className="gh-surface group relative w-full">
 			<CardHeader>
 				<CardTitle className="flex items-start justify-between">
-					<div className="flex flex-col gap-2">
-						<span className="flex flex-col space-y-0.5">Provider</span>
+					<div className="flex flex-col gap-1">
+						<span className="gh-eyebrow">Source</span>
+						<span className="text-sm font-medium">Provider</span>
 						<p className="flex items-center text-sm font-normal text-muted-foreground">
 							Select the source of your code
 						</p>
 					</div>
 					<div className="hidden space-y-1 text-sm font-normal md:block">
-						<GitBranch className="size-6 text-muted-foreground" />
+						<GitBranch className="size-5 text-muted-foreground" />
 					</div>
 				</CardTitle>
 			</CardHeader>
@@ -156,54 +162,33 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 					<div className="flex flex-row items-center justify-between w-full overflow-auto">
 						<TabsList
 							variant="line"
-							className="flex gap-4 justify-start bg-transparent"
+							className="w-fit rounded-md border border-border p-1 group-data-horizontal/tabs:h-9 data-[variant=line]:rounded-md"
 						>
-							<TabsTrigger
-								value="github"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
+							<TabsTrigger value="github" className={providerTabClassName}>
 								<GithubIcon className="size-4 text-current fill-current" />
 								Github
 							</TabsTrigger>
-							<TabsTrigger
-								value="gitlab"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
+							<TabsTrigger value="gitlab" className={providerTabClassName}>
 								<GitlabIcon className="size-4 text-current fill-current" />
 								Gitlab
 							</TabsTrigger>
-							<TabsTrigger
-								value="bitbucket"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
+							<TabsTrigger value="bitbucket" className={providerTabClassName}>
 								<BitbucketIcon className="size-4 text-current fill-current" />
 								Bitbucket
 							</TabsTrigger>
-							<TabsTrigger
-								value="gitea"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
+							<TabsTrigger value="gitea" className={providerTabClassName}>
 								<GiteaIcon className="size-4 text-current fill-current" />
 								Gitea
 							</TabsTrigger>
-							<TabsTrigger
-								value="docker"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
+							<TabsTrigger value="docker" className={providerTabClassName}>
 								<DockerIcon className="size-5 text-current" />
 								Docker
 							</TabsTrigger>
-							<TabsTrigger
-								value="git"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
+							<TabsTrigger value="git" className={providerTabClassName}>
 								<GitIcon />
 								Git
 							</TabsTrigger>
-							<TabsTrigger
-								value="drop"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
+							<TabsTrigger value="drop" className={providerTabClassName}>
 								<UploadCloud className="size-5 text-current" />
 								Drop
 							</TabsTrigger>

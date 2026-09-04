@@ -21,29 +21,34 @@ export const OnboardingLayout = ({ children, leftPanel }: Props) => {
 		whitelabeling?.loginLogoUrl || whitelabeling?.logoUrl || undefined;
 
 	return (
-		<div className="container relative min-h-svh flex-col items-center justify-center flex lg:max-w-none lg:grid lg:grid-cols-2 lg:px-0 w-full">
-			<div className="relative hidden h-full flex-col  p-10 text-primary dark:border-r lg:flex">
-				<div className="absolute inset-0 bg-muted" />
+		<div className="relative min-h-svh w-full bg-background lg:grid lg:grid-cols-2">
+			<div className="relative hidden h-full flex-col border-r border-border bg-sidebar p-10 lg:flex">
 				<Link
 					href="/"
-					className="relative z-20 flex items-center text-lg font-medium gap-4  text-primary"
+					className="relative z-20 flex items-center gap-3 text-base font-semibold tracking-tight text-foreground"
 				>
-					<Logo className="size-10" logoUrl={logoUrl} />
+					<Logo className="size-8" logoUrl={logoUrl} />
 					{appName}
 				</Link>
 				<div className="relative z-20 mt-auto">
 					{leftPanel ?? (
 						<blockquote className="space-y-2">
-							<p className="text-lg text-primary">{appDescription}</p>
+							<p className="text-lg text-muted-foreground">{appDescription}</p>
 						</blockquote>
 					)}
 				</div>
 			</div>
-			<div className="flex min-h-svh w-full flex-col">
-				<div className="flex w-full flex-1 flex-col justify-center space-y-6 max-w-lg mx-auto py-8">
-					{children}
+			<div className="relative flex min-h-svh w-full flex-col overflow-hidden px-4">
+				<div
+					aria-hidden
+					className="pointer-events-none absolute left-1/2 top-1/2 size-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl"
+				/>
+				<div className="relative flex w-full flex-1 flex-col justify-center py-10">
+					<div className="gh-surface mx-auto w-full max-w-sm space-y-6 rounded-lg px-6 py-8">
+						{children}
+					</div>
 				</div>
-				<div className="mx-auto flex w-full max-w-lg items-center justify-center gap-1 pb-6 text-muted-foreground sm:justify-end">
+				<div className="relative mx-auto flex w-full max-w-sm items-center justify-center gap-1 pb-6 text-muted-foreground sm:justify-end">
 					<Button variant="ghost" size="icon">
 						<Link href="https://github.com/dokploy/dokploy">
 							<GithubIcon />

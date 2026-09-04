@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 
 import type { NextPage } from "next";
 import type { AppProps } from "next/app";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import Head from "next/head";
 import { ThemeProvider } from "next-themes";
 import NextTopLoader from "nextjs-toploader";
@@ -14,7 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { api } from "@/utils/api";
 
-const inter = Inter({ subsets: ["latin"] });
+const geist = Geist({ subsets: ["latin"] });
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
 	getLayout?: (page: ReactElement) => ReactNode;
@@ -36,7 +36,7 @@ const MyApp = ({
 			<style jsx global>
 				{`
 					:root {
-						--font-inter: ${inter.style.fontFamily};
+						--font-inter: ${geist.style.fontFamily};
 					}
 				`}
 			</style>
@@ -51,7 +51,7 @@ const MyApp = ({
 					disableTransitionOnChange
 					forcedTheme={Component.theme}
 				>
-					<NextTopLoader color="hsl(var(--sidebar-ring))" />
+					<NextTopLoader color="var(--primary)" />
 					<WhitelabelingProvider />
 					<Analytics />
 					<Toaster richColors />

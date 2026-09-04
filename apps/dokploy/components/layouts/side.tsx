@@ -623,7 +623,7 @@ function SidebarLogo() {
 								<SidebarMenuButton
 									size={isCollapsed ? "sm" : "lg"}
 									className={cn(
-										"data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
+										"gh-interactive data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
 										isCollapsed &&
 											"flex justify-center items-center p-2 h-10 w-10 mx-auto",
 									)}
@@ -636,7 +636,7 @@ function SidebarLogo() {
 									>
 										<div
 											className={cn(
-												"flex items-center justify-center rounded-sm border",
+												"flex items-center justify-center rounded-sm border border-border/60 bg-card",
 												"size-6",
 											)}
 										>
@@ -662,7 +662,7 @@ function SidebarLogo() {
 										</div>
 									</div>
 									<ChevronsUpDown
-										className={cn("ml-auto", isCollapsed && "hidden")}
+										className={cn("ml-auto size-4 text-muted-foreground", isCollapsed && "hidden")}
 									/>
 								</SidebarMenuButton>
 							</PopoverTrigger>
@@ -696,7 +696,7 @@ function SidebarLogo() {
 														className="flex items-center justify-between gap-1"
 													>
 														<div className="flex min-w-0 flex-1 items-center gap-2">
-															<div className="flex size-6 shrink-0 items-center justify-center rounded-sm border">
+															<div className="flex size-6 shrink-0 items-center justify-center rounded-sm border border-border/60 bg-card">
 																<Logo
 																	className={cn(
 																		"transition-all",
@@ -808,7 +808,7 @@ function SidebarLogo() {
 									{(user?.role === "owner" ||
 										user?.role === "admin" ||
 										isCloud) && (
-										<div className="border-t p-1">
+										<div className="border-t border-border/60 p-1">
 											<AddOrganization />
 										</div>
 									)}
@@ -825,13 +825,13 @@ function SidebarLogo() {
 									variant="ghost"
 									size="icon"
 									className={cn(
-										"relative",
+										"gh-interactive relative text-muted-foreground",
 										isCollapsed && "h-8 w-8 p-1.5 mx-auto",
 									)}
 								>
 									<Bell className="size-4" />
 									{invitations && invitations.length > 0 && (
-										<span className="absolute top-0 right-0 flex size-4 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
+										<span className="absolute top-0 right-0 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
 											{invitations.length}
 										</span>
 									)}
@@ -994,7 +994,7 @@ export default function Page({ children }: Props) {
 				</SidebarHeader>
 				<SidebarContent>
 					<SidebarGroup>
-						<SidebarGroupLabel>Home</SidebarGroupLabel>
+						<SidebarGroupLabel className="gh-eyebrow text-[10px] uppercase tracking-[0.08em] text-muted-foreground">Home</SidebarGroupLabel>
 						<SidebarMenu>
 							{filteredHome.map((item) => {
 								const isSingle = item.isSingle !== false;
@@ -1016,7 +1016,7 @@ export default function Page({ children }: Props) {
 												<SidebarMenuButton
 													asChild
 													tooltip={item.title}
-													className={cn(isActive && "bg-border")}
+													className={cn("gh-interactive", isActive && "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary")}
 												>
 													<Link
 														href={item.url}
@@ -1036,6 +1036,7 @@ export default function Page({ children }: Props) {
 														<SidebarMenuButton
 															tooltip={item.title}
 															isActive={isActive}
+															className="gh-interactive data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
 														>
 															{item.icon && <item.icon />}
 
@@ -1053,6 +1054,7 @@ export default function Page({ children }: Props) {
 																		asChild
 																		// dinghy: highlight only the active sub-item, not every sibling
 																		isActive={isActiveRoute({ itemUrl: subItem.url, pathname })}
+																		className="gh-interactive data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
 																	>
 																		<Link
 																			href={subItem.url}
@@ -1084,7 +1086,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup>
-						<SidebarGroupLabel>Settings</SidebarGroupLabel>
+						<SidebarGroupLabel className="gh-eyebrow text-[10px] uppercase tracking-[0.08em] text-muted-foreground">Settings</SidebarGroupLabel>
 						<SidebarMenu className="gap-1">
 							{filteredSettings.map((item) => {
 								const isSingle = item.isSingle !== false;
@@ -1106,7 +1108,7 @@ export default function Page({ children }: Props) {
 												<SidebarMenuButton
 													asChild
 													tooltip={item.title}
-													className={cn(isActive && "bg-border")}
+													className={cn("gh-interactive", isActive && "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary")}
 												>
 													<Link
 														href={item.url}
@@ -1126,6 +1128,7 @@ export default function Page({ children }: Props) {
 														<SidebarMenuButton
 															tooltip={item.title}
 															isActive={isActive}
+															className="gh-interactive data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
 														>
 															{item.icon && <item.icon />}
 
@@ -1143,6 +1146,7 @@ export default function Page({ children }: Props) {
 																		asChild
 																		// dinghy: highlight only the active sub-item, not every sibling
 																		isActive={isActiveRoute({ itemUrl: subItem.url, pathname })}
+																		className="gh-interactive data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
 																	>
 																		<Link
 																			href={subItem.url}
@@ -1174,7 +1178,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup className="group-data-[collapsible=icon]:hidden">
-						<SidebarGroupLabel>Extra</SidebarGroupLabel>
+						<SidebarGroupLabel className="gh-eyebrow text-[10px] uppercase tracking-[0.08em] text-muted-foreground">Extra</SidebarGroupLabel>
 						<SidebarMenu>
 							{help.map((item: ExternalLink) => (
 								<SidebarMenuItem key={item.name}>
@@ -1186,7 +1190,7 @@ export default function Page({ children }: Props) {
 											className="flex w-full items-center gap-2"
 										>
 											<span className="mr-2">
-												<item.icon className="h-4 w-4" />
+												<item.icon className="h-4 w-4 text-muted-foreground" />
 											</span>
 											<span>{item.name}</span>
 										</a>
@@ -1196,7 +1200,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 				</SidebarContent>
-				<SidebarFooter>
+				<SidebarFooter className="border-t border-border/60">
 					<SidebarMenu className="flex flex-col gap-2">
 						{!isCloud && permissions?.organization.update && (
 							<SidebarMenuItem>
@@ -1207,12 +1211,12 @@ export default function Page({ children }: Props) {
 							<UserNav />
 						</SidebarMenuItem>
 						{whitelabeling?.footerText && (
-							<div className="px-3 text-xs text-muted-foreground text-center group-data-[collapsible=icon]:hidden">
+							<div className="px-3 text-[11px] text-muted-foreground/80 text-center group-data-[collapsible=icon]:hidden">
 								{whitelabeling.footerText}
 							</div>
 						)}
 						{dokployVersion && (
-							<div className="px-3 text-xs text-muted-foreground text-center group-data-[collapsible=icon]:hidden">
+							<div className="px-3 text-[11px] text-muted-foreground/80 text-center group-data-[collapsible=icon]:hidden">
 								Version {dokployVersion}
 							</div>
 						)}
@@ -1222,18 +1226,18 @@ export default function Page({ children }: Props) {
 			</Sidebar>
 			<SidebarInset>
 				{!includesProjects && (
-					<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-						<div className="flex items-center justify-between w-full px-4">
-							<div className="flex items-center gap-2">
-								<SidebarTrigger className="-ml-1" />
-								<Separator orientation="vertical" className="mr-2 h-4" />
+					<header className="flex h-16 shrink-0 items-center gap-2 border-b border-border/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+						<div className="flex items-center justify-between w-full px-6">
+							<div className="flex items-center gap-2 text-sm">
+								<SidebarTrigger className="-ml-1 text-muted-foreground" />
+								<Separator orientation="vertical" className="mr-2 h-4 bg-border/60" />
 								<Breadcrumb>
 									<BreadcrumbList>
 										<BreadcrumbItem className="block">
 											<BreadcrumbLink asChild>
 												<Link
 													href={activeItem?.url || "/"}
-													className="flex items-center gap-1.5"
+													className="flex items-center gap-1.5 text-sm font-medium text-foreground"
 												>
 													{activeItem?.title}
 												</Link>
@@ -1247,7 +1251,7 @@ export default function Page({ children }: Props) {
 					</header>
 				)}
 
-				<div className="flex flex-col w-full p-4 pt-0">{children}</div>
+				<div className="flex w-full flex-col gap-6 px-6 pb-6 pt-0">{children}</div>
 			</SidebarInset>
 		</SidebarProvider>
 	);
