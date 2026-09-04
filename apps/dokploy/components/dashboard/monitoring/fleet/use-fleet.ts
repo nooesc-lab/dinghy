@@ -181,9 +181,13 @@ export interface Fleet {
  * and folds it into one shared, time-aligned sample list so all hosts can
  * share a chart. The full window arrives on the first fetch, so the page is
  * populated immediately; refetches on the sampler's own cadence keep it live.
+ *
+ * `enabled: false` skips the query entirely (the summary reads as an empty
+ * fleet) — for surfaces that only show the strip when the viewer may see it.
  */
-export const useFleet = (): Fleet => {
+export const useFleet = ({ enabled = true }: { enabled?: boolean } = {}): Fleet => {
 	const { data } = api.fleet.history.useQuery(undefined, {
+		enabled,
 		refetchInterval: (query) => query.state.data?.pollMs ?? POLL_MS,
 		refetchOnWindowFocus: false,
 		placeholderData: (prev) => prev,

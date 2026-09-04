@@ -1,21 +1,18 @@
 import {
 	AlertTriangle,
 	ArrowUpDown,
-	BookIcon,
 	FolderInput,
-	Loader2,
 	MoreHorizontalIcon,
 	Search,
 	TrashIcon,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Collecting, Reveal } from "@/components/dashboard/monitoring/fleet/primitives";
+import { DitherGradient } from "@/components/dither-kit";
 import { BreadcrumbSidebar } from "@/components/shared/breadcrumb-sidebar";
-import { DateTooltip } from "@/components/shared/date-tooltip";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
-import { TagBadge } from "@/components/shared/tag-badge";
 import { TagFilter } from "@/components/shared/tag-filter";
 import {
 	AlertDialog,
@@ -29,14 +26,6 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -54,7 +43,46 @@ import {
 import { api } from "@/utils/api";
 import { useDebounce } from "@/utils/hooks/use-debounce";
 import { HandleProject } from "./handle-project";
+import {
+	collectServices,
+	countHealth,
+	type HealthCounts,
+	ProjectCard,
+	type ProjectColor,
+	projectColorAt,
+	statusDot,
+} from "./project-card";
 import { ProjectEnvironment } from "./project-environment";
+
+const plural = (n: number, word: string) =>
+	`${n} ${word}${n === 1 ? "" : "s"}`;
+
+/** Healthy · deploying · errors, as glowing dots — the header's live readout. */
+const HealthReadout = ({ counts }: { counts: HealthCounts }) => {
+	const entries = [
+		{ status: "done" as const, n: counts.done, label: "healthy" },
+		{ status: "running" as const, n: counts.running, label: "deploying" },
+		{ status: "error" as const, n: counts.error, label: "error" },
+	].filter((e) => e.n > 0);
+	if (entries.length === 0) return null;
+	return (
+		<dl className="flex items-center gap-4 font-mono text-[11px] text-muted-foreground">
+			{entries.map((e) => (
+				<div key={e.status} className="flex items-center gap-1.5">
+					<dt className="sr-only">{e.label}</dt>
+					<span
+						aria-hidden
+						className="size-1.5 rounded-full"
+						style={statusDot(e.status)}
+					/>
+					<dd className="tabular-nums">
+						{e.n} {e.label}
+					</dd>
+				</div>
+			))}
+		</dl>
+	);
+};
 
 export const ShowProjects = () => {
 	const utils = api.useUtils();
@@ -198,341 +226,276 @@ export const ShowProjects = () => {
 		});
 	}, [data, debouncedSearchQuery, sortBy, selectedTagIds]);
 
+	// Colour follows server order (newest first) so it survives sort/filter.
+	const colorOf = useMemo(() => {
+		const byId: Record<string, ProjectColor> = {};
+		(data ?? []).forEach((project, i) => {
+			byId[project.projectId] = projectColorAt(i);
+		});
+		return byId;
+	}, [data]);
+
+	const fleet = useMemo(() => {
+		const projects = data ?? [];
+		const services = projects.flatMap((p) =>
+			p.environments.flatMap(collectServices),
+		);
+		return {
+			projects: projects.length,
+			environments: projects.reduce((n, p) => n + p.environments.length, 0),
+			services: services.length,
+			counts: countHealth(services),
+		};
+	}, [data]);
+
 	return (
 		<>
 			<BreadcrumbSidebar
 				list={[{ name: "Projects", href: "/dashboard/projects" }]}
 			/>
-			<div className="w-full">
-				<Card className="h-full bg-sidebar p-2.5 rounded-lg ring-0 border border-border">
-					<div className="rounded-md bg-background border border-border">
-						<div className="flex justify-between gap-4 w-full items-center flex-wrap p-6">
-							<CardHeader className="flex-1 p-0">
-								<CardTitle className="text-xl flex flex-row gap-2">
-									<FolderInput className="size-6 text-muted-foreground self-center" />
+			<div className="flex w-full flex-col gap-4 pb-10">
+				<Reveal>
+					<header className="gh-surface relative overflow-hidden rounded-lg">
+						<DitherGradient
+							from="green"
+							direction="right"
+							cell={3}
+							opacity={0.14}
+							className="w-2/3"
+						/>
+						<div className="relative flex flex-wrap items-end justify-between gap-4 p-5">
+							<div className="flex flex-col gap-0.5">
+								<span className="gh-eyebrow">
 									Projects
-								</CardTitle>
-								<CardDescription>
-									Create and manage your projects
-								</CardDescription>
-							</CardHeader>
-							{permissions?.project.create && (
-								<div className="">
-									<HandleProject />
-								</div>
-							)}
-						</div>
-
-						<CardContent className="space-y-2 py-8 border-t gap-4 flex flex-col min-h-[60vh]">
-							{isPending ? (
-								<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[60vh]">
-									<span>Loading...</span>
-									<Loader2 className="animate-spin size-4" />
-								</div>
-							) : (
-								<>
-									<div className="flex max-sm:flex-col gap-4 items-center w-full">
-										<div className="flex-1 relative max-sm:w-full">
-											<FocusShortcutInput
-												placeholder="Filter projects..."
-												value={searchQuery}
-												onChange={(e) => setSearchQuery(e.target.value)}
-												className="pr-10"
-											/>
-
-											<Search className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-										</div>
-										<div className="flex items-center gap-2">
-											<TagFilter
-												tags={
-													availableTags?.map((tag) => ({
-														id: tag.tagId,
-														name: tag.name,
-														color: tag.color || undefined,
-													})) || []
-												}
-												selectedTags={selectedTagIds}
-												onTagsChange={setSelectedTagIds}
-											/>
-											<div className="flex items-center gap-2 min-w-48 max-sm:w-full">
-												<ArrowUpDown className="size-4 text-muted-foreground" />
-												<Select value={sortBy} onValueChange={setSortBy}>
-													<SelectTrigger className="w-full">
-														<SelectValue placeholder="Sort by..." />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="name-asc">Name (A-Z)</SelectItem>
-														<SelectItem value="name-desc">
-															Name (Z-A)
-														</SelectItem>
-														<SelectItem value="createdAt-desc">
-															Newest first
-														</SelectItem>
-														<SelectItem value="createdAt-asc">
-															Oldest first
-														</SelectItem>
-														<SelectItem value="services-desc">
-															Most services
-														</SelectItem>
-														<SelectItem value="services-asc">
-															Least services
-														</SelectItem>
-													</SelectContent>
-												</Select>
-											</div>
-										</div>
-									</div>
-									{filteredProjects?.length === 0 && (
-										<div className="mt-6 flex h-[50vh] w-full flex-col items-center justify-center gap-4">
-											<div className="rounded-xl bg-muted p-3">
-												<FolderInput className="size-6 text-muted-foreground" />
-											</div>
-											<div className="flex flex-col items-center gap-1.5">
-												<span className="text-[15px] font-medium">
-													{data?.length === 0
-														? "No projects yet"
-														: "No projects found"}
-												</span>
-												<span className="gh-eyebrow text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-													{data?.length === 0
-														? "Create your first project to get started"
-														: "Try adjusting your search or filters"}
-												</span>
-											</div>
-											{data?.length === 0 && permissions?.project.create && (
-												<HandleProject />
-											)}
-										</div>
+									{!isPending && (
+										<span className="tabular-nums"> · {fleet.projects}</span>
 									)}
-									<div className="w-full grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-5">
-										{filteredProjects?.map((project) => {
-											const emptyServices = project?.environments
-												.map(
-													(env) =>
-														env.applications.length === 0 &&
-														env.compose.length === 0 &&
-														env.libsql.length === 0 &&
-														env.mariadb.length === 0 &&
-														env.mongo.length === 0 &&
-														env.mysql.length === 0 &&
-														env.postgres.length === 0 &&
-														env.redis.length === 0,
-												)
-												.every(Boolean);
+								</span>
+								<h1 className="text-lg font-semibold tracking-tight">
+									{isPending ? "Projects" : plural(fleet.projects, "project")}
+								</h1>
+								<p className="text-sm text-muted-foreground">
+									{isPending
+										? "Create and manage your projects"
+										: fleet.projects === 0
+											? "Create and manage your projects"
+											: `${plural(fleet.services, "service")} across ${plural(fleet.environments, "environment")}`}
+								</p>
+							</div>
+							<div className="flex flex-wrap items-center gap-4">
+								{!isPending && <HealthReadout counts={fleet.counts} />}
+								{permissions?.project.create && <HandleProject />}
+							</div>
+						</div>
+					</header>
+				</Reveal>
 
-											const totalServices = project?.environments
-												.map(
-													(env) =>
-														env.applications.length +
-														env.compose.length +
-														env.libsql.length +
-														env.mariadb.length +
-														env.mongo.length +
-														env.mysql.length +
-														env.postgres.length +
-														env.redis.length,
-												)
-												.reduce((acc, curr) => acc + curr, 0);
+				{isPending ? (
+					<Collecting className="min-h-[50vh] rounded-lg" hint="loading projects" />
+				) : (
+					<>
+						<Reveal delay={0.08}>
+							<div className="flex w-full items-center gap-3 max-sm:flex-col">
+								<div className="relative flex-1 max-sm:w-full">
+									<FocusShortcutInput
+										placeholder="Filter projects..."
+										value={searchQuery}
+										onChange={(e) => setSearchQuery(e.target.value)}
+										className="pr-10"
+									/>
+									<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+								</div>
+								<div className="flex items-center gap-2 max-sm:w-full">
+									<TagFilter
+										tags={
+											availableTags?.map((tag) => ({
+												id: tag.tagId,
+												name: tag.name,
+												color: tag.color || undefined,
+											})) || []
+										}
+										selectedTags={selectedTagIds}
+										onTagsChange={setSelectedTagIds}
+									/>
+									<div className="flex min-w-48 items-center gap-2 max-sm:w-full">
+										<ArrowUpDown className="size-4 text-muted-foreground" />
+										<Select value={sortBy} onValueChange={setSortBy}>
+											<SelectTrigger className="w-full">
+												<SelectValue placeholder="Sort by..." />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="name-asc">Name (A-Z)</SelectItem>
+												<SelectItem value="name-desc">Name (Z-A)</SelectItem>
+												<SelectItem value="createdAt-desc">
+													Newest first
+												</SelectItem>
+												<SelectItem value="createdAt-asc">
+													Oldest first
+												</SelectItem>
+												<SelectItem value="services-desc">
+													Most services
+												</SelectItem>
+												<SelectItem value="services-asc">
+													Least services
+												</SelectItem>
+											</SelectContent>
+										</Select>
+									</div>
+								</div>
+							</div>
+						</Reveal>
 
-											// Find default environment from accessible environments, or fall back to first accessible environment
-											const accessibleEnvironment =
-												project?.environments.find((env) => env.isDefault) ||
-												project?.environments?.[0];
+						{filteredProjects.length === 0 && (
+							<Reveal delay={0.12}>
+								<div className="gh-surface relative flex min-h-[50vh] w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-lg">
+									<DitherGradient
+										from="grey"
+										direction="up"
+										cell={3}
+										opacity={0.3}
+									/>
+									<div className="relative flex flex-col items-center gap-4">
+										<div className="rounded bg-muted p-3">
+											<FolderInput className="size-6 text-muted-foreground" />
+										</div>
+										<div className="flex flex-col items-center gap-1.5">
+											<span className="text-[15px] font-medium">
+												{data?.length === 0
+													? "No projects yet"
+													: "No projects found"}
+											</span>
+											<span className="gh-eyebrow text-muted-foreground">
+												{data?.length === 0
+													? "Create your first project to get started"
+													: "Try adjusting your search or filters"}
+											</span>
+										</div>
+										{data?.length === 0 && permissions?.project.create && (
+											<HandleProject />
+										)}
+									</div>
+								</div>
+							</Reveal>
+						)}
 
-											const hasNoEnvironments = !accessibleEnvironment;
+						<ul className="grid w-full grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4">
+							{filteredProjects.map((project, i) => {
+								const emptyServices = project.environments
+									.map(
+										(env) =>
+											env.applications.length === 0 &&
+											env.compose.length === 0 &&
+											env.libsql.length === 0 &&
+											env.mariadb.length === 0 &&
+											env.mongo.length === 0 &&
+											env.mysql.length === 0 &&
+											env.postgres.length === 0 &&
+											env.redis.length === 0,
+									)
+									.every(Boolean);
 
-											return (
-												<div
-													key={project.projectId}
-													className="w-full lg:max-w-md"
-												>
-													<Link
-														href={
-															hasNoEnvironments
-																? "#"
-																: `/dashboard/project/${project.projectId}/environment/${accessibleEnvironment?.environmentId}`
-														}
-														onClick={(e) => {
-															if (hasNoEnvironments) {
-																e.preventDefault();
-															}
-														}}
+								return (
+									<ProjectCard
+										key={project.projectId}
+										project={project}
+										color={colorOf[project.projectId] ?? "green"}
+										delay={0.12 + Math.min(i, 12) * 0.04}
+										actions={
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button
+														variant="ghost"
+														size="icon"
+														className="size-8 text-muted-foreground opacity-60 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 aria-expanded:opacity-100"
+														aria-label={`Actions for ${project.name}`}
 													>
-														<Card className="gh-surface gh-interactive group relative flex h-full w-full flex-col rounded-lg border border-border ring-0 transition-colors hover:border-primary/30">
-															<CardHeader>
-																<CardTitle className="flex items-center justify-between gap-2 overflow-clip">
-																	<span className="flex flex-col gap-1.5 ">
-																		<div className="flex items-center gap-2">
-																			<BookIcon className="size-4 text-muted-foreground" />
-																			<span className="text-[15px] font-medium leading-none">
-																				{project.name}
-																			</span>
-																		</div>
+														<MoreHorizontalIcon className="size-4" />
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent
+													className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
+													onClick={(e) => e.stopPropagation()}
+												>
+													<DropdownMenuLabel className="font-normal">
+														Actions
+													</DropdownMenuLabel>
+													<div onClick={(e) => e.stopPropagation()}>
+														<ProjectEnvironment projectId={project.projectId} />
+													</div>
+													<div onClick={(e) => e.stopPropagation()}>
+														<HandleProject projectId={project.projectId} />
+													</div>
 
-																		<span className="text-sm text-muted-foreground break-normal">
-																			{project.description}
-																		</span>
-
-																		{project.projectTags &&
-																			project.projectTags.length > 0 && (
-																				<div className="flex flex-wrap gap-1.5 mt-2">
-																					{project.projectTags.map((pt) => (
-																						<TagBadge
-																							key={pt.tag.tagId}
-																							name={pt.tag.name}
-																							color={pt.tag.color}
-																						/>
-																					))}
-																				</div>
-																			)}
-
-																		{hasNoEnvironments && (
-																			<div className="flex flex-row gap-2 items-center rounded-md border border-yellow-500/30 bg-yellow-500/10 p-2 mt-2">
-																				<AlertTriangle className="size-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
-																				<span className="text-xs text-yellow-600 dark:text-yellow-400">
-																					You have access to this project but no
-																					environments are available
+													<div onClick={(e) => e.stopPropagation()}>
+														{permissions?.project.delete && (
+															<AlertDialog>
+																<AlertDialogTrigger className="w-full">
+																	<DropdownMenuItem
+																		className="w-full cursor-pointer  space-x-3"
+																		onSelect={(e) => e.preventDefault()}
+																	>
+																		<TrashIcon className="size-4" />
+																		<span>Delete</span>
+																	</DropdownMenuItem>
+																</AlertDialogTrigger>
+																<AlertDialogContent>
+																	<AlertDialogHeader>
+																		<AlertDialogTitle>
+																			Are you sure to delete this project?
+																		</AlertDialogTitle>
+																		{!emptyServices ? (
+																			<div className="flex flex-row gap-4 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
+																				<AlertTriangle className="text-yellow-600 dark:text-yellow-400" />
+																				<span className="text-sm text-yellow-600 dark:text-yellow-400">
+																					You have active services, please delete
+																					them first
 																				</span>
 																			</div>
+																		) : (
+																			<AlertDialogDescription>
+																				This action cannot be undone
+																			</AlertDialogDescription>
 																		)}
-																	</span>
-																	<div className="flex self-start space-x-1">
-																		<DropdownMenu>
-																			<DropdownMenuTrigger asChild>
-																				<Button
-																					variant="ghost"
-																					size="icon"
-																					className="px-2"
-																				>
-																					<MoreHorizontalIcon className="size-5" />
-																				</Button>
-																			</DropdownMenuTrigger>
-																			<DropdownMenuContent
-																				className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
-																				onClick={(e) => e.stopPropagation()}
-																			>
-																				<DropdownMenuLabel className="font-normal">
-																					Actions
-																				</DropdownMenuLabel>
-																				<div
-																					onClick={(e) => e.stopPropagation()}
-																				>
-																					<ProjectEnvironment
-																						projectId={project.projectId}
-																					/>
-																				</div>
-																				<div
-																					onClick={(e) => e.stopPropagation()}
-																				>
-																					<HandleProject
-																						projectId={project.projectId}
-																					/>
-																				</div>
-
-																				<div
-																					onClick={(e) => e.stopPropagation()}
-																				>
-																					{permissions?.project.delete && (
-																						<AlertDialog>
-																							<AlertDialogTrigger className="w-full">
-																								<DropdownMenuItem
-																									className="w-full cursor-pointer  space-x-3"
-																									onSelect={(e) =>
-																										e.preventDefault()
-																									}
-																								>
-																									<TrashIcon className="size-4" />
-																									<span>Delete</span>
-																								</DropdownMenuItem>
-																							</AlertDialogTrigger>
-																							<AlertDialogContent>
-																								<AlertDialogHeader>
-																									<AlertDialogTitle>
-																										Are you sure to delete this
-																										project?
-																									</AlertDialogTitle>
-																									{!emptyServices ? (
-																										<div className="flex flex-row gap-4 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
-																											<AlertTriangle className="text-yellow-600 dark:text-yellow-400" />
-																											<span className="text-sm text-yellow-600 dark:text-yellow-400">
-																												You have active
-																												services, please delete
-																												them first
-																											</span>
-																										</div>
-																									) : (
-																										<AlertDialogDescription>
-																											This action cannot be
-																											undone
-																										</AlertDialogDescription>
-																									)}
-																								</AlertDialogHeader>
-																								<AlertDialogFooter>
-																									<AlertDialogCancel>
-																										Cancel
-																									</AlertDialogCancel>
-																									<AlertDialogAction
-																										disabled={!emptyServices}
-																										onClick={async () => {
-																											await mutateAsync({
-																												projectId:
-																													project.projectId,
-																											})
-																												.then(() => {
-																													toast.success(
-																														"Project deleted successfully",
-																													);
-																												})
-																												.catch(() => {
-																													toast.error(
-																														"Error deleting this project",
-																													);
-																												})
-																												.finally(() => {
-																													utils.project.all.invalidate();
-																												});
-																										}}
-																									>
-																										Delete
-																									</AlertDialogAction>
-																								</AlertDialogFooter>
-																							</AlertDialogContent>
-																						</AlertDialog>
-																					)}
-																				</div>
-																			</DropdownMenuContent>
-																		</DropdownMenu>
-																	</div>
-																</CardTitle>
-															</CardHeader>
-															<CardFooter className="pt-4 mt-auto">
-																<div className="gh-eyebrow flex w-full flex-wrap items-center gap-1.5 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-																	<DateTooltip
-																		date={project.createdAt}
-																		className="text-inherit"
-																	>
-																		Created
-																	</DateTooltip>
-																	<span aria-hidden="true">·</span>
-																	<span>
-																		{totalServices}{" "}
-																		{totalServices === 1
-																			? "service"
-																			: "services"}
-																	</span>
-																</div>
-															</CardFooter>
-														</Card>
-													</Link>
-												</div>
-											);
-										})}
-									</div>
-								</>
-							)}
-						</CardContent>
-					</div>
-				</Card>
+																	</AlertDialogHeader>
+																	<AlertDialogFooter>
+																		<AlertDialogCancel>Cancel</AlertDialogCancel>
+																		<AlertDialogAction
+																			disabled={!emptyServices}
+																			onClick={async () => {
+																				await mutateAsync({
+																					projectId: project.projectId,
+																				})
+																					.then(() => {
+																						toast.success(
+																							"Project deleted successfully",
+																						);
+																					})
+																					.catch(() => {
+																						toast.error(
+																							"Error deleting this project",
+																						);
+																					})
+																					.finally(() => {
+																						utils.project.all.invalidate();
+																					});
+																			}}
+																		>
+																			Delete
+																		</AlertDialogAction>
+																	</AlertDialogFooter>
+																</AlertDialogContent>
+															</AlertDialog>
+														)}
+													</div>
+												</DropdownMenuContent>
+											</DropdownMenu>
+										}
+									/>
+								);
+							})}
+						</ul>
+					</>
+				)}
 			</div>
 		</>
 	);
