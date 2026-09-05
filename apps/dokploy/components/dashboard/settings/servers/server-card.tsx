@@ -124,7 +124,7 @@ interface VitalProps {
 const Vital = ({ label, children }: VitalProps) => (
 	<span className="flex min-w-0 flex-col gap-0.5">
 		<span className="gh-eyebrow">{label}</span>
-		<span className="truncate font-mono text-xs tabular-nums">{children}</span>
+		<span className="whitespace-nowrap font-mono text-xs tabular-nums">{children}</span>
 	</span>
 );
 
@@ -144,10 +144,10 @@ const VitalsBand = ({ sample, cpuHistory, color }: VitalsBandProps) => {
 			: null;
 	return (
 		<div className="flex flex-col gap-2.5 rounded border border-border bg-background/40 p-3">
-			<div className="grid grid-cols-4 gap-2">
+			<div className="flex flex-wrap gap-x-5 gap-y-2">
 				<Vital label="cpu">
 					{sample.cpuPercent === null ? "—" : `${sample.cpuPercent.toFixed(0)}%`}
-					<span className="text-muted-foreground"> · {sample.cpuCount}c</span>
+					<span className="text-muted-foreground"> / {sample.cpuCount}c</span>
 				</Vital>
 				<Vital label="mem">
 					{(sample.memUsedBytes / GIB).toFixed(1)}
@@ -156,16 +156,13 @@ const VitalsBand = ({ sample, cpuHistory, color }: VitalsBandProps) => {
 						/ {(sample.memTotalBytes / GIB).toFixed(0)} GiB
 					</span>
 				</Vital>
-				<Vital label="uptime">
-					{sample.uptimeSec === null ? "—" : formatUptime(sample.uptimeSec)}
-				</Vital>
 				<Vital label="load">
 					{sample.loadAvg1 === null ? "—" : sample.loadAvg1.toFixed(2)}
-					<span className="text-muted-foreground">
-						{" "}
-						· {sample.containerCount} ctr
-					</span>
 				</Vital>
+				<Vital label="up">
+					{sample.uptimeSec === null ? "—" : formatUptime(sample.uptimeSec)}
+				</Vital>
+				<Vital label="ctrs">{sample.containerCount}</Vital>
 			</div>
 			<span className="block h-7">
 				{cpuHistory.length < 2 ? (
