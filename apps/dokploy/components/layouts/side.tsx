@@ -17,6 +17,7 @@ import {
 	GalleryVerticalEnd,
 	GitBranch,
 	Globe,
+	Hammer,
 	HardDrive,
 	House,
 	Key,
@@ -364,6 +365,12 @@ const MENU: Menu = {
 					url: "/dashboard/settings/registry",
 					icon: Package,
 					isEnabled: ({ permissions }) => !!permissions?.registry.read,
+				},
+				{
+					title: "Build Defaults",
+					url: "/dashboard/settings/build-defaults",
+					icon: Hammer,
+					isEnabled: ({ permissions }) => !!permissions?.organization.update,
 				},
 				{
 					title: "Secrets",

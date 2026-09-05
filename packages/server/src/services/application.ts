@@ -45,6 +45,7 @@ import {
 	issueCommentExists,
 	updateIssueComment,
 } from "./github";
+import { findBuildDefaultsForEnvironment } from "./organization";
 import { generateApplyPatchesCommand } from "./patch";
 import {
 	findPreviewDeploymentById,
@@ -54,7 +55,8 @@ import { validUniqueServerAppName } from "./project";
 export type Application = typeof applications.$inferSelect;
 
 export const createApplication = async (
-	input: z.infer<typeof apiCreateApplication>,
+	input: z.infer<typeof apiCreateApplication> &
+		Partial<Pick<Application, "buildServerId" | "buildRegistryId">>,
 ) => {
 	const appName = buildAppName("app", input.appName);
 
@@ -66,12 +68,22 @@ export const createApplication = async (
 		});
 	}
 
+	// Applications created without an explicit build server inherit the
+	// organization's default build server + registry (both or none).
+	const buildDefaults = input.buildServerId
+		? null
+		: await findBuildDefaultsForEnvironment(input.environmentId);
+
 	return await db.transaction(async (tx) => {
 		const newApplication = await tx
 			.insert(applications)
 			.values({
 				...input,
 				appName,
+				...(buildDefaults && {
+					buildServerId: buildDefaults.buildServerId,
+					buildRegistryId: buildDefaults.registryId,
+				}),
 			})
 			.returning()
 			.then((value) => value[0]);

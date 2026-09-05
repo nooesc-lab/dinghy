@@ -88,6 +88,13 @@ export const findServersByUserId = async (userId: string) => {
 };
 
 export const deleteServer = async (serverId: string) => {
+	// Build server + registry defaults go together; the FK alone would only
+	// null the server half.
+	await db
+		.update(organization)
+		.set({ defaultBuildServerId: null, defaultRegistryId: null })
+		.where(eq(organization.defaultBuildServerId, serverId));
+
 	const currentServer = await db
 		.delete(server)
 		.where(eq(server.serverId, serverId))
