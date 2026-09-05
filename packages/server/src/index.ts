@@ -34,7 +34,6 @@ export * from "./services/mount";
 export * from "./services/mysql";
 export * from "./services/network";
 export * from "./services/notification";
-export * from "./services/organization";
 export * from "./services/overview";
 export * from "./services/patch";
 export * from "./services/patch-repo";

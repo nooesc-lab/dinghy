@@ -1,13 +1,8 @@
 import { db } from "@dokploy/server/db";
 import {
-	applyBuildDefaultsToApplications,
-	countApplicationsWithoutBuildServer,
-	findOrganizationBuildDefaults,
-	getAccessibleServerIds,
 	hasValidLicense,
 	IS_CLOUD,
 	sendInvitationEmail,
-	updateOrganizationBuildDefaults,
 } from "@dokploy/server/index";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq, exists } from "drizzle-orm";
@@ -603,64 +598,4 @@ export const organizationRouter = createTRPCRouter({
 			where: eq(organization.id, ctx.session.activeOrganizationId),
 		});
 	}),
-	getBuildDefaults: protectedProcedure.query(async ({ ctx }) => {
-		return await findOrganizationBuildDefaults(
-			ctx.session.activeOrganizationId,
-		);
-	}),
-	setBuildDefaults: withPermission("organization", "update")
-		.input(
-			z.object({
-				buildServerId: z.string().min(1).nullable(),
-				registryId: z.string().min(1).nullable(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			if (input.buildServerId) {
-				const accessibleIds = await getAccessibleServerIds(ctx.session);
-				if (!accessibleIds.has(input.buildServerId)) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "You are not authorized to access this server",
-					});
-				}
-			}
-			await updateOrganizationBuildDefaults(
-				ctx.session.activeOrganizationId,
-				input,
-			);
-			await audit(ctx, {
-				action: "update",
-				resourceType: "organization",
-				resourceId: ctx.session.activeOrganizationId,
-				metadata: {
-					type: "buildDefaults",
-					buildServerId: input.buildServerId,
-					registryId: input.registryId,
-				},
-			});
-			return { success: true };
-		}),
-	countApplicationsWithoutBuildServer: withPermission(
-		"organization",
-		"update",
-	).query(async ({ ctx }) => {
-		return await countApplicationsWithoutBuildServer(
-			ctx.session.activeOrganizationId,
-		);
-	}),
-	applyBuildDefaultsToExisting: withPermission("organization", "update").mutation(
-		async ({ ctx }) => {
-			const updated = await applyBuildDefaultsToApplications(
-				ctx.session.activeOrganizationId,
-			);
-			await audit(ctx, {
-				action: "update",
-				resourceType: "organization",
-				resourceId: ctx.session.activeOrganizationId,
-				metadata: { type: "applyBuildDefaults", updated },
-			});
-			return { updated };
-		},
-	),
 });

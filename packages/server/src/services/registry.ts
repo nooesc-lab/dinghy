@@ -1,9 +1,5 @@
 import { db } from "@dokploy/server/db";
-import {
-	type apiCreateRegistry,
-	organization,
-	registry,
-} from "@dokploy/server/db/schema";
+import { type apiCreateRegistry, registry } from "@dokploy/server/db/schema";
 import {
 	execAsync,
 	execAsyncRemote,
@@ -90,13 +86,6 @@ export const createRegistry = async (
 
 export const removeRegistry = async (registryId: string) => {
 	try {
-		// Build server + registry defaults go together; the FK alone would only
-		// null the registry half.
-		await db
-			.update(organization)
-			.set({ defaultBuildServerId: null, defaultRegistryId: null })
-			.where(eq(organization.defaultRegistryId, registryId));
-
 		const response = await db
 			.delete(registry)
 			.where(eq(registry.registryId, registryId))

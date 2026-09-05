@@ -73,8 +73,6 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 	);
 	const { data: buildServers } = api.server.buildServers.useQuery();
 	const { data: registries } = api.registry.all.useQuery();
-	const { data: orgDefaults } = api.organization.getBuildDefaults.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
 
 	const { mutateAsync, isPending } = api.application.update.useMutation();
 
@@ -126,23 +124,6 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 						<CardDescription>
 							Configure a dedicated server for building your application.
 						</CardDescription>
-						{orgDefaults?.buildServer && orgDefaults.registry && (
-							<p className="mt-1 font-mono text-[11px] text-muted-foreground">
-								Organization default: {orgDefaults.buildServer.name} ·{" "}
-								{orgDefaults.registry.registryName}
-								{permissions?.organization.update && (
-									<>
-										{" · "}
-										<Link
-											href="/dashboard/settings/build-defaults"
-											className="text-primary underline-offset-4 hover:underline"
-										>
-											Change
-										</Link>
-									</>
-								)}
-							</p>
-						)}
 					</div>
 				</div>
 			</CardHeader>

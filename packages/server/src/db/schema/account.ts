@@ -1,6 +1,5 @@
 import { relations, sql } from "drizzle-orm";
 import {
-	type AnyPgColumn,
 	boolean,
 	index,
 	integer,
@@ -11,7 +10,6 @@ import {
 import { nanoid } from "nanoid";
 import { network } from "./network";
 import { projects } from "./project";
-import { registry } from "./registry";
 import { server } from "./server";
 import { ssoProvider } from "./sso";
 import { user } from "./user";
@@ -72,14 +70,6 @@ export const organization = pgTable("organization", {
 	ownerId: text("owner_id")
 		.notNull()
 		.references(() => user.id, { onDelete: "cascade" }),
-	defaultBuildServerId: text("default_build_server_id").references(
-		(): AnyPgColumn => server.serverId,
-		{ onDelete: "set null" },
-	),
-	defaultRegistryId: text("default_registry_id").references(
-		(): AnyPgColumn => registry.registryId,
-		{ onDelete: "set null" },
-	),
 });
 
 export const organizationRole = pgTable(
@@ -118,14 +108,6 @@ export const organizationRelations = relations(
 		owner: one(user, {
 			fields: [organization.ownerId],
 			references: [user.id],
-		}),
-		defaultBuildServer: one(server, {
-			fields: [organization.defaultBuildServerId],
-			references: [server.serverId],
-		}),
-		defaultRegistry: one(registry, {
-			fields: [organization.defaultRegistryId],
-			references: [registry.registryId],
 		}),
 		servers: many(server),
 		networks: many(network),
